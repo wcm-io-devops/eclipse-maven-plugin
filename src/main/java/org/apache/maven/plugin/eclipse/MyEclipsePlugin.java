@@ -79,8 +79,6 @@ public class MyEclipsePlugin
     private static final String MYECLIPSE_J2EE_13_CLASSPATH_CONTAINER =
         "com.genuitec.eclipse.j2eedt.core.J2EE13_CONTAINER";
 
-    private static final String MYECLIPSE_DEFAULT_HIBERNATE_CFG_XML = "src/main/resources/applicationContext.xml";
-
     /**
      * Spring configuration placeholder
      * <p/>

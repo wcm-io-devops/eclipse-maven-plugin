@@ -30,7 +30,7 @@ public class EclipseCodeFormatterTest
         File testStyleFile = new File( basedir, "src/test/resources/projects/workspace-02/code-styles.xml" );
 
         EclipseCodeFormatterProfile formatter = new EclipseCodeFormatterProfile();
-        formatter.init( testStyleFile.toURL(), null );
+        formatter.init( testStyleFile.toURI().toURL(), null );
 
         assertEquals( "format-1", formatter.getProfileName() );
 
