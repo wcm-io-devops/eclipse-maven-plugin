@@ -15,7 +15,7 @@ This fork includes the patch from [MECLIPSE-641](https://issues.apache.org/jira/
 
 To use this in your projects update all your POMs to use
 
-```
+```xml
 <plugin>
   <groupId>io.wcm.devops.maven.plugins.plugins</groupId>
   <artifactId>eclipse-maven-plugin</artifactId>
@@ -24,7 +24,7 @@ To use this in your projects update all your POMs to use
 
 instead of
 
-```
+```xml
 <plugin>
   <groupId>org.apache.maven.plugins</groupId>
   <artifactId>maven-eclipse-plugin</artifactId>
