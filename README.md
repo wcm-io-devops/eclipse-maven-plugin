@@ -1,5 +1,7 @@
 <img src="http://wcm.io/images/favicon-16@2x.png"/> Maven Eclipse Plugin
 ======
+[![Build Status](https://travis-ci.org/wcm-io-devops/maven-eclipse-plugin.png?branch=develop)](https://travis-ci.org/wcm-io-devops/maven-eclipse-plugin)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.wcm.devops.maven.plugins/eclipse-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.wcm.devops.maven.plugins/eclipse-maven-plugin)
 
 The Eclipse Plugin is used to generate Eclipse IDE files (.project, .classpath and the .settings folder) from a POM.
 
@@ -10,3 +12,21 @@ In our wcm.io and other Maven-based projects we usually use both m2e Integration
 So we maintain a fork of the original plugin here and publish it unter Apache 2.0 license within the wcm.io DevOps project.
 
 This fork includes the patch from [MECLIPSE-641](https://issues.apache.org/jira/browse/MECLIPSE-641) which was never applied to the original code base, but is important for pregenerating the eclipse project settings.
+
+To use this in your projects update all your POMs to use
+
+```
+<plugin>
+  <groupId>io.wcm.devops.maven.plugins.plugins</groupId>
+  <artifactId>eclipse-maven-plugin</artifactId>
+</plugin>
+```
+
+instead of
+
+```
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-eclipse-plugin</artifactId>
+</plugin>
+```
