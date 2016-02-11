@@ -17,7 +17,7 @@ To use this in your projects update all your POMs to use
 
 ```xml
 <plugin>
-  <groupId>io.wcm.devops.maven.plugins.plugins</groupId>
+  <groupId>io.wcm.devops.maven.plugins</groupId>
   <artifactId>eclipse-maven-plugin</artifactId>
 </plugin>
 ```
