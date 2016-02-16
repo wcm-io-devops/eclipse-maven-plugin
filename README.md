@@ -19,6 +19,7 @@ To use this in your projects update all your POMs to use
 <plugin>
   <groupId>io.wcm.devops.maven.plugins</groupId>
   <artifactId>eclipse-maven-plugin</artifactId>
+  <version>3.0.0</version>
 </plugin>
 ```
 
