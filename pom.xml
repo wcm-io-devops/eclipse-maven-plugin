@@ -34,7 +34,7 @@ under the License.
   <version>3.0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
-  <name>wcm.io DevOps Maven Eclipse Plugin</name>
+  <name>wcm.io DevOps Eclipse Maven Plugin</name>
   <description>
     The Eclipse Plugin is used to generate Eclipse IDE files (.project, .classpath and the .settings folder) from a POM.
   </description>
