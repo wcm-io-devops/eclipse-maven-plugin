@@ -11,7 +11,10 @@ In our wcm.io and other Maven-based projects we usually use both m2e Integration
 
 So we maintain a fork of the original plugin here and publish it under Apache 2.0 license within the wcm.io DevOps project.
 
-This fork includes the patch from [MECLIPSE-641](https://issues.apache.org/jira/browse/MECLIPSE-641) which was never applied to the original code base, but is important for generating the eclipse project settings.
+Changes since the original Maven Eclipse Plugin 2.10:
+
+* Patch from [MECLIPSE-641](https://issues.apache.org/jira/browse/MECLIPSE-641) which was never applied to the original code base, but is important for generating the eclipse project settings (since 3.0.0)
+* Add support for `filtering` property on additionalConfig files (since 3.1.0)
 
 To use this in your projects update all your POMs to use
 
@@ -19,7 +22,7 @@ To use this in your projects update all your POMs to use
 <plugin>
   <groupId>io.wcm.devops.maven.plugins</groupId>
   <artifactId>eclipse-maven-plugin</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
 </plugin>
 ```
 

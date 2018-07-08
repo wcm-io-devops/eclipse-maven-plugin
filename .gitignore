@@ -27,3 +27,5 @@ npm-debug.log
 *.sublime-*
 *nbactions*.xml
 .temp/
+
+pom-test.xml

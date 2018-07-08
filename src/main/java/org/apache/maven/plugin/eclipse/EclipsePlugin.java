@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +38,7 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.manager.WagonManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Resource;
@@ -66,6 +68,9 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.MavenSettingsBuilder;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.shared.filtering.MavenFilteringException;
+import org.apache.maven.shared.filtering.MavenResourcesExecution;
+import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.WagonException;
 import org.apache.maven.wagon.observers.Debug;
@@ -95,7 +100,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  * @author <a href="mailto:fgiust@apache.org">Fabrizio Giustina</a>
  * @version $Id$
  */
-@Mojo( name = "eclipse" )
+@Mojo( name = "eclipse", requiresProject = true )
 @Execute( phase = LifecyclePhase.GENERATE_RESOURCES )
 public class EclipsePlugin
     extends AbstractIdeSupportMojo
@@ -647,6 +652,11 @@ public class EclipsePlugin
     @Parameter( property = "eclipse.jeeversion" )
     protected String jeeversion;
 
+    @Component( role = MavenResourcesFiltering.class, hint = "default" )
+    protected MavenResourcesFiltering mavenResourcesFiltering;
+    @Parameter( defaultValue = "${session}" )
+    private MavenSession mavenSession;
+    
     protected final boolean isJavaProject()
     {
         return isJavaProject;
@@ -1337,6 +1347,51 @@ public class EclipsePlugin
                     throw new MojoExecutionException( Messages.getString( "EclipsePlugin.settingsxmlfailure",
                                                                           e.getMessage() ) );
                 }
+                
+                // if configured apply resource filtering on the copied resource
+                if ( projectRelativeFile.exists() && projectRelativeFile.isFile() && file.isFiltering() )
+                {
+                    String encoding = IdeUtils.getCompilerSourceEncoding( project );
+
+                    File outputDir = new File( projectRelativeFile.getParent() + "/_filtered" );
+                    outputDir.mkdirs();
+                    
+                    Resource dummyResource = new Resource();
+                    dummyResource.setDirectory( projectRelativeFile.getParent() );
+                    dummyResource.setIncludes( Arrays.asList( projectRelativeFile.getName() ) );
+                    dummyResource.setFiltering( true );
+                    MavenResourcesExecution exec = new MavenResourcesExecution(
+                            Arrays.asList( dummyResource ),
+                            outputDir,
+                            project,
+                            encoding,
+                            Collections.<String>emptyList(),
+                            Collections.<String>emptyList(),
+                            mavenSession );
+                    try
+                    {
+                        mavenResourcesFiltering.filterResources( exec );
+                    }
+                    catch ( MavenFilteringException ex )
+                    {
+                        throw new MojoExecutionException( "Error filtering resource: "
+                                + projectRelativeFile.getPath(), ex );
+                    }
+                    
+                    File filteredFile = new File( outputDir, projectRelativeFile.getName() );
+                    projectRelativeFile.delete();
+                    try
+                    {
+                        org.apache.commons.io.FileUtils.moveFile( filteredFile, projectRelativeFile );
+                    }
+                    catch ( IOException ex )
+                    {
+                        throw new MojoExecutionException( "Error moving " + filteredFile.getPath() + " to "
+                                + projectRelativeFile.getPath(), ex );
+                    }
+                    outputDir.delete();
+                }
+                
             }
         }
     }

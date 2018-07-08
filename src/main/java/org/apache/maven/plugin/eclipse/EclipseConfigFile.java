@@ -52,6 +52,8 @@ public class EclipseConfigFile
      * @since 2.5
      */
     private URL url;
+    
+    private boolean filtering;
 
     /**
      * Getter for <code>content</code>.
@@ -132,4 +134,27 @@ public class EclipseConfigFile
     {
         this.url = url;
     }
+
+    /**
+     * Filter resource (replace placeholders)
+     * @return if true resources is filtered
+     * 
+     * @since 3.1.0
+     */
+    public boolean isFiltering()
+    {
+        return filtering;
+    }
+
+    /**
+     * Filter resource (replace placeholders)
+     * @param filtering if true resources is filtered
+     * 
+     * @since 3.1.0
+     */
+    public void setFiltering( boolean filtering )
+    {
+        this.filtering = filtering;
+    }
+    
 }
