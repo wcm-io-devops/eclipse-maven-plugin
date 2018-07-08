@@ -140,6 +140,16 @@ under the License.
       <version>2.1</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-filtering</artifactId>
+      <version>3.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-interpolation</artifactId>
+      <version>1.25</version>
+    </dependency>
+    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.2</version>
@@ -320,6 +330,7 @@ under the License.
             <excludes combine.children="append">
               <exclude>README-testing.txt</exclude>
               <exclude>README.md</exclude>
+              <exclude>infinitest.filters</exclude>
               
               <!--
                 These files contain several files for eclipse
