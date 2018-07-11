@@ -31,10 +31,10 @@ under the License.
 
   <groupId>io.wcm.devops.maven.plugins</groupId>
   <artifactId>eclipse-maven-plugin</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
   <packaging>maven-plugin</packaging>
 
-  <name>wcm.io DevOps Maven Eclipse Plugin</name>
+  <name>wcm.io DevOps Eclipse Maven Plugin</name>
   <description>
     The Eclipse Plugin is used to generate Eclipse IDE files (.project, .classpath and the .settings folder) from a POM.
   </description>
@@ -138,6 +138,16 @@ under the License.
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-provider-api</artifactId>
       <version>2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-filtering</artifactId>
+      <version>3.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-interpolation</artifactId>
+      <version>1.25</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -320,6 +330,7 @@ under the License.
             <excludes combine.children="append">
               <exclude>README-testing.txt</exclude>
               <exclude>README.md</exclude>
+              <exclude>infinitest.filters</exclude>
               
               <!--
                 These files contain several files for eclipse
@@ -341,22 +352,20 @@ under the License.
           <version>2.5.3</version>
           <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
-            <useReleaseProfile>false</useReleaseProfile>
-            <releaseProfiles>release</releaseProfiles>
             <goals>deploy</goals>
           </configuration>
           <dependencies>
             <dependency>
               <groupId>org.apache.maven.scm</groupId>
               <artifactId>maven-scm-provider-gitexe</artifactId>
-              <version>1.9.4</version>
+              <version>1.10.0</version>
             </dependency>
           </dependencies>
         </plugin>
         <plugin>
           <groupId>org.sonatype.plugins</groupId>
           <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>1.6.6</version>
+          <version>1.6.8</version>
         </plugin>
         <plugin>
           <groupId>external.atlassian.jgitflow</groupId>
@@ -564,7 +573,7 @@ under the License.
     </profile>    
     <!-- configuration to deploy into maven central -->
     <profile>
-      <id>release</id>
+      <id>release-profile</id>
       <activation>
         <property>
           <name>performRelease</name>
@@ -610,6 +619,59 @@ under the License.
             </configuration>
           </plugin>
         </plugins>
+      </build>
+    </profile>
+    <!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
+    <profile>
+      <id>only-eclipse</id>
+      <activation>
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.eclipse.m2e</groupId>
+              <artifactId>lifecycle-mapping</artifactId>
+              <version>1.0.0</version>
+              <configuration>
+                <lifecycleMappingMetadata>
+                  <pluginExecutions>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-plugin-plugin</artifactId>
+                        <versionRange>[3.4,)</versionRange>
+                        <goals>
+                          <goal>descriptor</goal>
+                          <goal>helpmojo</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore />
+                      </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.apache.rat</groupId>
+                        <artifactId>apache-rat-plugin</artifactId>
+                        <versionRange>[0.11,)</versionRange>
+                        <goals>
+                          <goal>check</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore />
+                      </action>
+                    </pluginExecution>
+                  </pluginExecutions>
+                </lifecycleMappingMetadata>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
       </build>
     </profile>
   </profiles>
