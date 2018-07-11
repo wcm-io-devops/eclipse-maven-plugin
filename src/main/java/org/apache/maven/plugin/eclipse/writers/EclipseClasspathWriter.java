@@ -256,7 +256,7 @@ public class EclipseClasspathWriter
 
             boolean attributeElemOpen = false;
 
-            // mark test dependencies as "test" (required for eclipse 4.8 photon)
+            // mark test source folders as "test" (required for eclipse 4.8 photon)
             if ( dir.isTest() )
             {
               if ( !attributeElemOpen )
@@ -552,6 +552,21 @@ public class EclipseClasspathWriter
         }
 
         boolean attributeElemOpen = false;
+
+        // mark test dependencies as "test" (required for eclipse 4.8 photon)
+        if ( dep.isTestDependency() )
+        {
+          if ( !attributeElemOpen )
+          {
+              writer.startElement( ATTRIBUTES );
+              attributeElemOpen = true;
+          }
+
+          writer.startElement( ATTRIBUTE );
+          writer.addAttribute( VALUE, "true" );
+          writer.addAttribute( NAME, "test" );
+          writer.endElement();
+        }
 
         if ( javadocpath != null )
         {

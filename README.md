@@ -15,7 +15,7 @@ Changes since the original Maven Eclipse Plugin 2.10:
 
 * Patch from [MECLIPSE-641](https://issues.apache.org/jira/browse/MECLIPSE-641) which was never applied to the original code base, but is important for generating the eclipse project settings (since 3.0.0)
 * Add support for `filtering` property on additionalConfig files (since 3.1.0)
-* Mark test source folders as "test" for Eclipse 4.8 Photon (since 3.1.0)
+* Mark test source folders and test dependencies as "test" for Eclipse 4.8 Photon (since 3.1.0)
 
 To use this in your projects update all your POMs to use
 
