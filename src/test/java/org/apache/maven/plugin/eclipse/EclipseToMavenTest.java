@@ -21,6 +21,7 @@ package org.apache.maven.plugin.eclipse;
 import junit.framework.TestCase;
 
 import org.apache.maven.model.Dependency;
+import org.codehaus.plexus.util.ReflectionUtils;
 
 /**
  * @author Fabrizio Giustina
@@ -44,6 +45,7 @@ public class EclipseToMavenTest
     {
         super.setUp();
         mojo = new EclipseToMavenMojo();
+        ReflectionUtils.setVariableValueInObject( mojo, "groupIdTokens", Integer.valueOf( -1 ));  // Default, normally injected
     }
 
     /**
@@ -105,26 +107,49 @@ public class EclipseToMavenTest
 
     /**
      * Test the generation of a groupId from a bundle symbolic name.
+     * @throws IllegalAccessException
      */
-    public void testCreateGroupId()
+    public void testCreateGroupId() throws IllegalAccessException
     {
         assertEquals( "test", mojo.createGroupId( "test" ) );
         assertEquals( "org", mojo.createGroupId( "org.eclipse" ) );
         assertEquals( "org.eclipse", mojo.createGroupId( "org.eclipse.jdt" ) );
         assertEquals( "org.eclipse.jdt", mojo.createGroupId( "org.eclipse.jdt.apt" ) );
         assertEquals( "org.eclipse.jdt.apt", mojo.createGroupId( "org.eclipse.jdt.apt.core" ) );
+
+        ReflectionUtils.setVariableValueInObject( mojo, "groupIdTokens", Integer.valueOf( 3 ));
+        assertEquals( "test", mojo.createGroupId( "test" ) );
+        assertEquals( "org.eclipse", mojo.createGroupId( "org.eclipse" ) );
+        assertEquals( "org.eclipse.jdt", mojo.createGroupId( "org.eclipse.jdt" ) );
+        assertEquals( "org.eclipse.jdt", mojo.createGroupId( "org.eclipse.jdt.apt" ) );
+        assertEquals( "org.eclipse.jdt", mojo.createGroupId( "org.eclipse.jdt.apt.core" ) );
     }
 
     /**
      * Test the generation of a artifactId from a bundle symbolic name.
+     * @throws IllegalAccessException
      */
-    public void testCreateArtifactId()
+    public void testCreateArtifactId() throws IllegalAccessException
     {
         assertEquals( "test", mojo.createArtifactId( "test" ) );
         assertEquals( "eclipse", mojo.createArtifactId( "org.eclipse" ) );
         assertEquals( "jdt", mojo.createArtifactId( "org.eclipse.jdt" ) );
         assertEquals( "apt", mojo.createArtifactId( "org.eclipse.jdt.apt" ) );
         assertEquals( "core", mojo.createArtifactId( "org.eclipse.jdt.apt.core" ) );
+
+        ReflectionUtils.setVariableValueInObject( mojo, "groupIdTokens", Integer.valueOf( 3 ));
+        assertEquals( "test", mojo.createArtifactId( "test" ) );
+        assertEquals( "org.eclipse", mojo.createArtifactId( "org.eclipse" ) );
+        assertEquals( "org.eclipse.jdt", mojo.createArtifactId( "org.eclipse.jdt" ) );
+        assertEquals( "apt", mojo.createArtifactId( "org.eclipse.jdt.apt" ) );
+        assertEquals( "apt.core", mojo.createArtifactId( "org.eclipse.jdt.apt.core" ) );
+
+        ReflectionUtils.setVariableValueInObject( mojo, "useBundleNameAsArtifactId", Boolean.TRUE );
+        assertEquals( "test", mojo.createArtifactId( "test" ) );
+        assertEquals( "org.eclipse", mojo.createArtifactId( "org.eclipse" ) );
+        assertEquals( "org.eclipse.jdt", mojo.createArtifactId( "org.eclipse.jdt" ) );
+        assertEquals( "org.eclipse.jdt.apt", mojo.createArtifactId( "org.eclipse.jdt.apt" ) );
+        assertEquals( "org.eclipse.jdt.apt.core", mojo.createArtifactId( "org.eclipse.jdt.apt.core" ) );
     }
 
     public void testOsgiVersionToMavenVersion()
