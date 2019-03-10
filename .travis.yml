@@ -30,6 +30,7 @@ install: "mvn -s ./.travis.maven-settings.xml clean"
 
 script:
 - "mvn -s ./.travis.maven-settings.xml -U install"
+- "mvn -s ./.travis.maven-settings.xml -U -Prun-its verify"
 # Remove wcm.io artefacts from repository before cache
 - rm -rf $HOME/.m2/repository/io/wcm
 
