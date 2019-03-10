@@ -38,15 +38,16 @@ under the License.
   <description>
     The Eclipse Plugin is used to generate Eclipse IDE files (.project, .classpath and the .settings folder) from a POM.
   </description>
+  <url>${site.url}/${site.url.module.prefix}/</url>
 
   <prerequisites>
     <maven>${mavenVersion}</maven>
   </prerequisites>
 
   <scm>
-    <connection>scm:git:https://github.com/wcm-io-devops/maven-eclipse-plugin.git</connection>
-    <developerConnection>scm:git:https://github.com/wcm-io-devops/maven-eclipse-plugin.git</developerConnection>
-    <url>https://github.com/wcm-io-devops/maven-eclipse-plugin</url>
+    <connection>scm:git:https://github.com/wcm-io-devops/eclipse-maven-plugin.git</connection>
+    <developerConnection>scm:git:https://github.com/wcm-io-devops/eclipse-maven-plugin.git</developerConnection>
+    <url>https://github.com/wcm-io-devops/eclipse-maven-plugin</url>
     <tag>HEAD</tag>
   </scm>
 
@@ -91,6 +92,11 @@ under the License.
     <distribution.snapshotRepositoryUrl>https://oss.sonatype.org/content/repositories/snapshots</distribution.snapshotRepositoryUrl>
     <distribution.releaseRepositoryId>ossrh</distribution.releaseRepositoryId>
     <distribution.releaseRepositoryUrl>https://oss.sonatype.org/service/local/staging/deploy/maven2/</distribution.releaseRepositoryUrl>
+
+    <site.url>http://wcm.io</site.url>
+    <site.deploy.id>ssh-wcm.io</site.deploy.id>
+    <site.deploy.url />
+    <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
   </properties>
 
   <dependencies>
@@ -371,6 +377,11 @@ under the License.
           <groupId>external.atlassian.jgitflow</groupId>
           <artifactId>jgitflow-maven-plugin</artifactId>
           <version>1.0-m5.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-changes-plugin</artifactId>
+          <version>2.12.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -702,6 +713,22 @@ under the License.
           </reportSet>
         </reportSets>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changes-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>changes-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+        <configuration>
+          <!-- Allow HTML markup in CDATA sections in changes reports -->
+          <escapeHTML>false</escapeHTML>
+          <xmlPath>${basedir}/changes.xml</xmlPath>
+        </configuration>
+      </plugin>
     </plugins>
   </reporting>
 
@@ -714,6 +741,11 @@ under the License.
       <id>${distribution.snapshotRepositoryId}</id>
       <url>${distribution.snapshotRepositoryUrl}</url>
     </snapshotRepository>
+    <site>
+      <id>${site.deploy.id}</id>
+      <name>Maven Site Deployment</name>
+      <url>${site.deploy.url}${site.url.module.prefix}</url>
+    </site>
   </distributionManagement>
 
 </project>
