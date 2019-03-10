@@ -21,7 +21,8 @@ language: java
 
 jdk:
 - oraclejdk8
-- openjdk11
+# Disable java11 for integration test feature branch
+#- openjdk11
 
 # Make sure travis can use container-based infrastructure
 sudo: false
