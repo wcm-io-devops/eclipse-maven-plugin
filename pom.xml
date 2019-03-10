@@ -38,6 +38,7 @@ under the License.
   <description>
     The Eclipse Plugin is used to generate Eclipse IDE files (.project, .classpath and the .settings folder) from a POM.
   </description>
+  <url>${site.url}/${site.url.module.prefix}/</url>
 
   <prerequisites>
     <maven>${mavenVersion}</maven>
@@ -91,6 +92,11 @@ under the License.
     <distribution.snapshotRepositoryUrl>https://oss.sonatype.org/content/repositories/snapshots</distribution.snapshotRepositoryUrl>
     <distribution.releaseRepositoryId>ossrh</distribution.releaseRepositoryId>
     <distribution.releaseRepositoryUrl>https://oss.sonatype.org/service/local/staging/deploy/maven2/</distribution.releaseRepositoryUrl>
+
+    <site.url>http://wcm.io</site.url>
+    <site.deploy.id>ssh-wcm.io</site.deploy.id>
+    <site.deploy.url />
+    <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
   </properties>
 
   <dependencies>
@@ -735,6 +741,11 @@ under the License.
       <id>${distribution.snapshotRepositoryId}</id>
       <url>${distribution.snapshotRepositoryUrl}</url>
     </snapshotRepository>
+    <site>
+      <id>${site.deploy.id}</id>
+      <name>Maven Site Deployment</name>
+      <url>${site.deploy.url}${site.url.module.prefix}</url>
+    </site>
   </distributionManagement>
 
 </project>
