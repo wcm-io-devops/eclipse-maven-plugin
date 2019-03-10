@@ -23,15 +23,6 @@ under the License.
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
 
-  <bannerLeft>
-    <name>${project.name}</name>
-    <src>http://maven.apache.org/images/apache-maven-project.png</src>
-    <href>http://maven.apache.org/</href>
-  </bannerLeft>
-  <bannerRight>
-    <src>http://maven.apache.org/images/maventxt_logo_200.gif</src>
-  </bannerRight>
-
   <skin>
     <groupId>org.apache.maven.skins</groupId>
     <artifactId>maven-fluido-skin</artifactId>
@@ -46,7 +37,7 @@ under the License.
         <sitesearch>${project.url}</sitesearch>
       </googleSearch>
       <gitHub>
-        <projectId>apache/maven-plugins</projectId>
+        <projectId>wcm-io-devops/eclipse-maven-plugin</projectId>
         <ribbonOrientation>right</ribbonOrientation>
         <ribbonColor>gray</ribbonColor>
       </gitHub>
@@ -60,9 +51,6 @@ under the License.
       <item name="Usage" href="usage.html"/>
       <item name="FAQ" href="faq.html"/>
       <item name="Trouble Shooting" href="trouble-shooting/index.html"/>
-      <!-- According to http://jira.codehaus.org/browse/MNGSITE-152 -->
-      <item name="License" href="http://www.apache.org/licenses/"/>
-      <item name="Download" href="download.html"/>
     </menu>
     <menu name="Configuration">
       <item name="Multiple Module Projects" href="reactor.html"/>
