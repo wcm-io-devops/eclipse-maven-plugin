@@ -282,6 +282,14 @@ under the License.
   </dependencies>
 
   <build>
+    <extensions>
+      <!-- SCP support for deploying sites -->
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh</artifactId>
+        <version>3.0.0</version>
+      </extension>
+    </extensions>
     <pluginManagement>
       <plugins>
         <plugin>
