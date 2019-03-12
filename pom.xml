@@ -23,9 +23,9 @@ under the License.
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>maven-plugins</artifactId>
-    <groupId>org.apache.maven.plugins</groupId>
-    <version>28</version>
+    <groupId>io.wcm.devops</groupId>
+    <artifactId>io.wcm.devops.parent_toplevel</artifactId>
+    <version>1.1.1-SNAPSHOT</version>
     <relativePath />
   </parent>
 
@@ -85,7 +85,7 @@ under the License.
     <mavenVersion>2.2.1</mavenVersion>
     <maven.test.jvmargs>-Xmx1024m</maven.test.jvmargs>
     <surefire.version>2.18.1</surefire.version>
-    <mavenPluginToolsVersion>3.4</mavenPluginToolsVersion>
+    <mavenPluginToolsVersion>3.5.2</mavenPluginToolsVersion>
 
     <!-- repository settings -->
     <distribution.snapshotRepositoryId>ossrh</distribution.snapshotRepositoryId>
@@ -97,6 +97,9 @@ under the License.
     <site.deploy.id>ssh-wcm.io</site.deploy.id>
     <site.deploy.url />
     <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
+    
+    <!-- Skip integration tests by default -->
+    <skipITs>true</skipITs>
   </properties>
 
   <dependencies>
@@ -113,6 +116,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
+      <version>3.6.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -282,14 +286,6 @@ under the License.
   </dependencies>
 
   <build>
-    <extensions>
-      <!-- SCP support for deploying sites -->
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-ssh</artifactId>
-        <version>3.0.0</version>
-      </extension>
-    </extensions>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -308,11 +304,6 @@ under the License.
               </goals>
             </execution>
           </executions>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>2.7</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -357,39 +348,10 @@ under the License.
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-gpg-plugin</artifactId>
-          <version>1.6</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>2.5.3</version>
+          <artifactId>maven-javadoc-plugin</artifactId>
           <configuration>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-            <goals>deploy</goals>
+            <doclint>none</doclint>
           </configuration>
-          <dependencies>
-            <dependency>
-              <groupId>org.apache.maven.scm</groupId>
-              <artifactId>maven-scm-provider-gitexe</artifactId>
-              <version>1.10.0</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-        <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>1.6.8</version>
-        </plugin>
-        <plugin>
-          <groupId>external.atlassian.jgitflow</groupId>
-          <artifactId>jgitflow-maven-plugin</artifactId>
-          <version>1.0-m5.1</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-changes-plugin</artifactId>
-          <version>2.12.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -464,6 +426,9 @@ under the License.
     </profile>
     <profile>
       <id>run-its</id>
+      <properties>
+        <skipITs>false</skipITs>
+      </properties>
       <build>
         <pluginManagement>
           <plugins>
@@ -629,14 +594,6 @@ under the License.
               <autoReleaseAfterClose>false</autoReleaseAfterClose>
             </configuration>
           </plugin>
-          <!-- skip on javadoc errors -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <failOnError>false</failOnError>
-            </configuration>
-          </plugin>
         </plugins>
       </build>
     </profile>
@@ -697,46 +654,17 @@ under the License.
 
   <reporting>
     <plugins>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>${mavenPluginToolsVersion}</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>${surefire.version}</version>
-        <reportSets>
-          <reportSet>
-            <id>integration-tests</id>
-            <reports>
-              <report>report-only</report>
-            </reports>
-            <configuration>
-              <outputName>failsafe-report</outputName>
-              <reportsDirectories>
-                <reportsDirectory>${project.build.directory}/failsafe-reports</reportsDirectory>
-              </reportsDirectories>
-            </configuration>
-          </reportSet>
-        </reportSets>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-changes-plugin</artifactId>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>changes-report</report>
-            </reports>
-          </reportSet>
-        </reportSets>
         <configuration>
-          <!-- Allow HTML markup in CDATA sections in changes reports -->
-          <escapeHTML>false</escapeHTML>
-          <xmlPath>${basedir}/changes.xml</xmlPath>
+          <requirements>
+            <maven>${mavenVersion}</maven>
+          </requirements>
         </configuration>
       </plugin>
+
     </plugins>
   </reporting>
 
