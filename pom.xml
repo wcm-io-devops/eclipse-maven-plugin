@@ -82,6 +82,8 @@ under the License.
   </developers>
 
   <properties>
+    <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
+
     <mavenVersion>2.2.1</mavenVersion>
     <maven.test.jvmargs>-Xmx1024m</maven.test.jvmargs>
     <surefire.version>2.18.1</surefire.version>
@@ -93,11 +95,6 @@ under the License.
     <distribution.releaseRepositoryId>ossrh</distribution.releaseRepositoryId>
     <distribution.releaseRepositoryUrl>https://oss.sonatype.org/service/local/staging/deploy/maven2/</distribution.releaseRepositoryUrl>
 
-    <site.url>http://wcm.io</site.url>
-    <site.deploy.id>ssh-wcm.io</site.deploy.id>
-    <site.deploy.url />
-    <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
-    
     <!-- Skip integration tests by default -->
     <skipITs>true</skipITs>
   </properties>
@@ -669,14 +666,6 @@ under the License.
   </reporting>
 
   <distributionManagement>
-    <repository>
-      <id>${distribution.releaseRepositoryId}</id>
-      <url>${distribution.releaseRepositoryUrl}</url>
-    </repository>
-    <snapshotRepository>
-      <id>${distribution.snapshotRepositoryId}</id>
-      <url>${distribution.snapshotRepositoryUrl}</url>
-    </snapshotRepository>
     <site>
       <id>${site.deploy.id}</id>
       <name>Maven Site Deployment</name>
