@@ -32,7 +32,7 @@ ${project.name}
 
   This is a fork of the original {{{https://maven.apache.org/plugins/maven-eclipse-plugin/}Maven Eclipse Plugin}} which {{{http://mail-archives.apache.org/mod_mbox/maven-dev/201510.mbox/%3Cop.x55dxii1kdkhrr%40robertscholte.dynamic.ziggo.nl%3E}was retired end of 2015}} in favor of the m2e Eclipse integration.
 
-  In our wcm.io and other Maven-based projects we usually use both m2e Integration and the Eclipse Maven Plugin. The Eclipse Maven Plugin is used to generate project-specific eclipse settings files and further files for Checkstyle, Findbugs and PMD based on a global build tools artifact defined a parent POM like `io.wcm.maven:io.wcm.maven.global-parent`, see {{{http://wcm.io/tooling/maven/global-parent.html}Global Parent}} documentation for details.
+  In our wcm.io and other Maven-based projects we usually use both m2e Integration and the Eclipse Maven Plugin. The Eclipse Maven Plugin is used to generate project-specific eclipse settings files and further files for Checkstyle, Findbugs and PMD based on a global build tools artifact defined a parent POM like `io.wcm.maven:io.wcm.maven.global-parent`, see {{{https://wcm.io/tooling/maven/global-parent.html}Global Parent}} documentation for details.
 
   So we maintain a fork of the original plugin here and publish it under Apache 2.0 license within the wcm.io DevOps project.
 

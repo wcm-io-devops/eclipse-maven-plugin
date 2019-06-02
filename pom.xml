@@ -25,7 +25,7 @@ under the License.
   <parent>
     <groupId>io.wcm.devops</groupId>
     <artifactId>io.wcm.devops.parent_toplevel</artifactId>
-    <version>1.1.4</version>
+    <version>1.1.5-SNAPSHOT</version>
     <relativePath />
   </parent>
 
@@ -63,7 +63,7 @@ under the License.
 
   <organization>
     <name>wcm.io DevOps</name>
-    <url>http://devops.wcm.io</url>
+    <url>https://devops.wcm.io</url>
   </organization>
 
   <licenses>
@@ -77,7 +77,7 @@ under the License.
     <developer>
       <name>wcm.io Community</name>
       <organization>wcm.io</organization>
-      <organizationUrl>http://wcm.io</organizationUrl>
+      <organizationUrl>https://wcm.io</organizationUrl>
     </developer>
   </developers>
 
