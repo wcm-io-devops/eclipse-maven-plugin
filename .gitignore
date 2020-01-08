@@ -16,16 +16,21 @@ npm-debug.log
 .settings
 .externalToolBuilders
 .pmd
+.eclipse-pmd
 .checkstyle
 .idea
 .vagrant
 *.iml
 .DS_Store
+*.retry
 .rubygems
 .sass-cache
 .rubygems-gem-maven-plugin
 *.sublime-*
 *nbactions*.xml
 .temp/
+.vlt
+.vlt-sync*
+.brackets.json
 
 pom-test.xml
