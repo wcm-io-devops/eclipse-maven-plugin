@@ -19,13 +19,13 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>maven-plugins</artifactId>
-    <groupId>org.apache.maven.plugins</groupId>
-    <version>28</version>
+    <groupId>io.wcm.devops</groupId>
+    <artifactId>io.wcm.devops.parent_toplevel</artifactId>
+    <version>1.2.0</version>
     <relativePath />
   </parent>
 
@@ -38,6 +38,7 @@ under the License.
   <description>
     The Eclipse Plugin is used to generate Eclipse IDE files (.project, .classpath and the .settings folder) from a POM.
   </description>
+  <url>${site.url}/${site.url.module.prefix}/</url>
 
   <prerequisites>
     <maven>${mavenVersion}</maven>
@@ -62,7 +63,7 @@ under the License.
 
   <organization>
     <name>wcm.io DevOps</name>
-    <url>http://devops.wcm.io</url>
+    <url>https://devops.wcm.io</url>
   </organization>
 
   <licenses>
@@ -76,21 +77,26 @@ under the License.
     <developer>
       <name>wcm.io Community</name>
       <organization>wcm.io</organization>
-      <organizationUrl>http://wcm.io</organizationUrl>
+      <organizationUrl>https://wcm.io</organizationUrl>
     </developer>
   </developers>
 
   <properties>
+    <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
+
     <mavenVersion>2.2.1</mavenVersion>
     <maven.test.jvmargs>-Xmx1024m</maven.test.jvmargs>
     <surefire.version>2.18.1</surefire.version>
-    <mavenPluginToolsVersion>3.4</mavenPluginToolsVersion>
+    <mavenPluginToolsVersion>3.5.2</mavenPluginToolsVersion>
 
     <!-- repository settings -->
     <distribution.snapshotRepositoryId>ossrh</distribution.snapshotRepositoryId>
     <distribution.snapshotRepositoryUrl>https://oss.sonatype.org/content/repositories/snapshots</distribution.snapshotRepositoryUrl>
     <distribution.releaseRepositoryId>ossrh</distribution.releaseRepositoryId>
     <distribution.releaseRepositoryUrl>https://oss.sonatype.org/service/local/staging/deploy/maven2/</distribution.releaseRepositoryUrl>
+
+    <!-- Skip integration tests by default -->
+    <skipITs>true</skipITs>
   </properties>
 
   <dependencies>
@@ -107,6 +113,7 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
+      <version>3.6.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -297,11 +304,6 @@ under the License.
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>2.7</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-report-plugin</artifactId>
           <version>${surefire.version}</version>
           <configuration>
@@ -343,34 +345,10 @@ under the License.
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-gpg-plugin</artifactId>
-          <version>1.6</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>2.5.3</version>
+          <artifactId>maven-javadoc-plugin</artifactId>
           <configuration>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-            <goals>deploy</goals>
+            <doclint>none</doclint>
           </configuration>
-          <dependencies>
-            <dependency>
-              <groupId>org.apache.maven.scm</groupId>
-              <artifactId>maven-scm-provider-gitexe</artifactId>
-              <version>1.10.0</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-        <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>1.6.8</version>
-        </plugin>
-        <plugin>
-          <groupId>external.atlassian.jgitflow</groupId>
-          <artifactId>jgitflow-maven-plugin</artifactId>
-          <version>1.0-m5.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -445,6 +423,9 @@ under the License.
     </profile>
     <profile>
       <id>run-its</id>
+      <properties>
+        <skipITs>false</skipITs>
+      </properties>
       <build>
         <pluginManagement>
           <plugins>
@@ -610,14 +591,6 @@ under the License.
               <autoReleaseAfterClose>false</autoReleaseAfterClose>
             </configuration>
           </plugin>
-          <!-- skip on javadoc errors -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <failOnError>false</failOnError>
-            </configuration>
-          </plugin>
         </plugins>
       </build>
     </profile>
@@ -678,42 +651,26 @@ under the License.
 
   <reporting>
     <plugins>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>${mavenPluginToolsVersion}</version>
+        <configuration>
+          <requirements>
+            <maven>${mavenVersion}</maven>
+          </requirements>
+        </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>${surefire.version}</version>
-        <reportSets>
-          <reportSet>
-            <id>integration-tests</id>
-            <reports>
-              <report>report-only</report>
-            </reports>
-            <configuration>
-              <outputName>failsafe-report</outputName>
-              <reportsDirectories>
-                <reportsDirectory>${project.build.directory}/failsafe-reports</reportsDirectory>
-              </reportsDirectories>
-            </configuration>
-          </reportSet>
-        </reportSets>
-      </plugin>
+
     </plugins>
   </reporting>
 
   <distributionManagement>
-    <repository>
-      <id>${distribution.releaseRepositoryId}</id>
-      <url>${distribution.releaseRepositoryUrl}</url>
-    </repository>
-    <snapshotRepository>
-      <id>${distribution.snapshotRepositoryId}</id>
-      <url>${distribution.snapshotRepositoryUrl}</url>
-    </snapshotRepository>
+    <site>
+      <id>${site.deploy.id}</id>
+      <name>Maven Site Deployment</name>
+      <url>${site.deploy.url}${site.url.module.prefix}</url>
+    </site>
   </distributionManagement>
 
 </project>

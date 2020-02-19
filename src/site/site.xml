@@ -23,47 +23,28 @@ under the License.
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
 
-  <bannerLeft>
-    <name>${project.name}</name>
-    <src>http://maven.apache.org/images/apache-maven-project.png</src>
-    <href>http://maven.apache.org/</href>
-  </bannerLeft>
-  <bannerRight>
-    <src>http://maven.apache.org/images/maventxt_logo_200.gif</src>
-  </bannerRight>
-
-  <skin>
-    <groupId>org.apache.maven.skins</groupId>
-    <artifactId>maven-fluido-skin</artifactId>
-    <version>1.3.0</version>
-  </skin>
-
   <custom>
-    <fluidoSkin>
-      <topBarEnabled>true</topBarEnabled>
-      <sideBarEnabled>true</sideBarEnabled>
-      <googleSearch>
-        <sitesearch>${project.url}</sitesearch>
-      </googleSearch>
-      <gitHub>
-        <projectId>apache/maven-plugins</projectId>
-        <ribbonOrientation>right</ribbonOrientation>
-        <ribbonColor>gray</ribbonColor>
-      </gitHub>
-    </fluidoSkin>
+    <reflowSkin>
+      <!-- Split menus in the bottom navigation -->
+      <bottomNav maxSpan="9" >
+        <column>Overview</column>
+        <column>Configuration</column>
+        <column>Examples</column>
+        <column>reports</column>
+      </bottomNav>
+    </reflowSkin>
   </custom>
-
+  
   <body>
+
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
       <item name="Goals" href="plugin-info.html"/>
       <item name="Usage" href="usage.html"/>
       <item name="FAQ" href="faq.html"/>
       <item name="Trouble Shooting" href="trouble-shooting/index.html"/>
-      <!-- According to http://jira.codehaus.org/browse/MNGSITE-152 -->
-      <item name="License" href="http://www.apache.org/licenses/"/>
-      <item name="Download" href="download.html"/>
     </menu>
+
     <menu name="Configuration">
       <item name="Multiple Module Projects" href="reactor.html"/>
       <item name="Eclipse PDE Projects" href="pde.html"/>
@@ -81,5 +62,7 @@ under the License.
       <item name="Provide Project Natures And Build Commands" href="examples/provide-project-natures-and-build-commands.html"/>
       <item name="Specifying source path inclusions and exclusions" href="examples/specifying-source-path-inclusions-and-exclusions.html"/>
     </menu>
+
   </body>
+
 </project>
