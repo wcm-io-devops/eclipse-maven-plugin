@@ -25,7 +25,7 @@ under the License.
   <parent>
     <groupId>io.wcm.devops</groupId>
     <artifactId>io.wcm.devops.parent_toplevel</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.5-SNAPSHOT</version>
     <relativePath />
   </parent>
 
@@ -57,8 +57,8 @@ under the License.
   </issueManagement>
 
   <ciManagement>
-    <system>Travis CI</system>
-    <url>https://travis-ci.com/wcm-io-devops</url>
+    <system>GitHub Actions</system>
+    <url>https://github.com/wcm-io-devops/eclipse-maven-plugin/actions</url>
   </ciManagement>
 
   <organization>
