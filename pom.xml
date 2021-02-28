@@ -669,7 +669,7 @@ under the License.
     <site>
       <id>${site.deploy.id}</id>
       <name>Maven Site Deployment</name>
-      <url>${site.deploy.url}${site.url.module.prefix}</url>
+      <url>${site.deploy.url}/${site.url.module.prefix}</url>
     </site>
   </distributionManagement>
 
