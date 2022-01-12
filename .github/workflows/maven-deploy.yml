@@ -14,17 +14,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Check out Git repository
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Configure GIT
       - name: Configure GIT
         run: |
           git config --global user.email "${{ secrets.GH_SITE_DEPLOY_EMAIL }}"
           git config --global user.name "${{ secrets.GH_SITE_DEPLOY_NAME }}"
 
-      # Set up environment with Java and Maven
       - name: Setup JDK
         uses: actions/setup-java@v2
         with:
@@ -32,7 +29,6 @@ jobs:
           java-version: 8
           cache: 'maven'
 
-      # Build, deploy to ossrh
       - name: Build, verify, deploy
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
