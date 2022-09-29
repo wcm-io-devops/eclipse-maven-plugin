@@ -20,6 +20,7 @@ package org.apache.maven.plugin.eclipse;
  */
 
 import aQute.lib.osgi.Analyzer;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeployer;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
@@ -30,6 +31,10 @@ import org.apache.maven.artifact.metadata.ArtifactMetadata;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.License;
 import org.apache.maven.model.Model;
@@ -44,6 +49,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
+import org.apache.maven.shared.utils.WriterFactory;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
@@ -55,26 +61,40 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Add eclipse artifacts from an eclipse installation to the local repo. This mojo automatically analize the eclipse
- * directory, copy plugins jars to the local maven repo, and generates appropriate poms. This is the official central
- * repository builder for Eclipse plugins, so it has the necessary default values. For customized repositories see
- * {@link MakeArtifactsMojo} Typical usage:
- * <code>mvn eclipse:to-maven 
+ * <p>Add Eclipse artifacts from an Eclipse installation or a local P2 repo to the local Maven repo.</p>
+ * 
+ * <p>This mojo automatically analyzes the local P2 repo, copies jars from the plugins directory to the local maven
+ * repo, and generates appropriate poms.</p>
+ * 
+ * <p>Typical usage for a local Eclipse installation:</p>
+ * <p><code>mvn eclipse:to-maven 
  * -DdeployTo=maven.org::default::scpexe://repo1.maven.org/home/maven/repository-staging/to-ibiblio/eclipse-staging
- *  -DeclipseDir=.</code>
- *
+ * -DeclipseDir=/opt/eclipse</code></p>
+ * 
+ * <p>Or to download and convert a P2 repository:</p>
+ * <p><code>/opt/eclipse/eclipse -application org.eclipse.equinox.p2.artifact.repository.mirrorApplication
+ * -writeMode clean -verbose -raw -ignoreErrors -source http://download.eclipse.org/releases/oxygen
+ * -destination file:/tmp/p2-oxygen<br>
+ * mvn eclipse:to-maven -DbundleNameAsArtifactId=true -DgroupIdTokens=3 -DattachSourcePlugins
+ * -DresolveVersionRanges -DdeployTo=oxygen::default::file:/tmp/repo-2018-12 -DeclipseDir=/tmp/oxygen</code></p>
+ * 
+ * <p>Note: The size of such an update site (P2 repository) is 3 to 4 GB and the download can take several hours.</p>
+ * 
  * @author Fabrizio Giustina
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
  * @version $Id$
@@ -91,9 +111,19 @@ public class EclipseToMavenMojo
     private static final Pattern DEPLOYTO_PATTERN = Pattern.compile( "(.+)::(.+)::(.+)" );
 
     /**
-     * A pattern for a 4 digit osgi version number.
+     * A pattern for a 4 digit OSGi version number.
      */
     private static final Pattern VERSION_PATTERN = Pattern.compile( "(([0-9]+\\.)+[0-9]+)" );
+
+    /**
+     * A pattern for an artifact id generated from a source plugin.
+     */
+    private static final Pattern SOURCE_PATTERN = Pattern.compile( ".+:.+\\.source:.+" );
+
+    /**
+     * The version range used for an arbitrary version.
+     */
+    private static final String ANY_VERSION = "[0,)";
 
     /**
      * Plexus container, needed to manually lookup components for deploy of artifacts.
@@ -137,7 +167,7 @@ public class EclipseToMavenMojo
     private File eclipseDir;
 
     /**
-     * Input handler, needed for comand line handling.
+     * Input handler, needed for command line handling.
      */
     @Component
     protected InputHandler inputHandler;
@@ -158,6 +188,37 @@ public class EclipseToMavenMojo
      */
     @Parameter( property = "deployTo" )
     private String deployTo;
+
+    /**
+     * Number of tokens from the bundle name used to build the group id. A value of -1 will use all tokens, but the
+     * last.
+     */
+    @Parameter( property = "groupIdTokens" , defaultValue = "-1" )
+    private int groupIdTokens;
+
+    /**
+     * Flag to use the bundle name directly as artifactId.
+     */
+    @Parameter( property = "bundleNameAsArtifactId" , defaultValue = "false" )
+    private boolean useBundleNameAsArtifactId;
+
+    /**
+     * Flag to turn source plugins to attached artifacts.
+     */
+    @Parameter( property = "attachSourcePlugins" , defaultValue = "false" )
+    private boolean attachSourcePlugins;
+
+    /**
+     * Flag to turn resolve version ranges of dependencies with available artifacts of the P2 repository.
+     */
+    @Parameter( property = "resolveVersionRanges" , defaultValue = "false" )
+    private boolean resolveVersionRanges;
+
+    /**
+     * Flag to turn resolve recommended versions of dependencies with available artifacts of the P2 repository.
+     */
+    @Parameter( property = "resolveRecommendedVersions" , defaultValue = "false" )
+    private boolean resolveRecommendedVersions;
 
     /**
      * @see org.apache.maven.plugin.Mojo#execute()
@@ -205,29 +266,59 @@ public class EclipseToMavenMojo
             getLog().info( Messages.getString( "EclipseToMavenMojo.remoterepositorydeployto", deployTo ) );
         }
 
-        Map plugins = new HashMap();
-        Map models = new HashMap();
+        Map<String, EclipseOsgiPlugin> plugins = new HashMap<String, EclipseOsgiPlugin>();
+        Map<String, Model> models = new HashMap<String, Model>();
+
+        getLog().info( Messages.getString( "EclipseToMavenMojo.searchingplugins", pluginDir.getAbsolutePath() ) );
 
         for ( File file : files )
         {
-            getLog().info( Messages.getString( "EclipseToMavenMojo.processingfile", file.getAbsolutePath() ) );
+            getLog().debug( Messages.getString( "EclipseToMavenMojo.processingfile", file.getAbsolutePath() ) );
 
             processFile( file, plugins, models );
         }
 
-        int i = 1;
-        for ( Object o : plugins.keySet() )
+        getLog().info( Messages.getString( "EclipseToMavenMojo.pluginsfound", 
+            new Object[] { pluginDir.getAbsolutePath(), plugins.size() } ) );
+
+        if ( attachSourcePlugins )
         {
-            getLog().info( Messages.getString( "EclipseToMavenMojo.processingplugin", new Object[] { i++,
-                               plugins.keySet().size() } ) ); //$NON-NLS-1$
-            String key = (String) o;
-            EclipseOsgiPlugin plugin = (EclipseOsgiPlugin) plugins.get( key );
-            Model model = (Model) models.get( key );
-            writeArtifact( plugin, model, remoteRepo );
+            Set<String> sourceKeys = new HashSet<String>();
+            for ( String key : plugins.keySet() )
+            {
+                if ( SOURCE_PATTERN.matcher( key ).matches() )
+                {
+                    sourceKeys.add( key );
+                }
+            }
+
+            models.keySet().removeAll( sourceKeys );
+
+            getLog().info( Messages.getString( "EclipseToMavenMojo.attachedsourceplugins", sourceKeys.size() ) );
+        }
+
+        resolveVersions( models );
+
+        getLog().info( Messages.getString( "EclipseToMavenMojo.deploymainartifacts", models.size() ) );
+
+        int i = 1;
+        try
+        {
+            for ( String key : models.keySet() )
+            {
+                getLog().debug( Messages.getString( "EclipseToMavenMojo.processingplugin", new Object[] { i++,
+                                   models.keySet().size() } ) );
+                Model model = (Model) models.get( key );
+                writeArtifact( model, plugins, remoteRepo );
+            }
+        }
+        finally
+        {
+            getLog().info( Messages.getString( "EclipseToMavenMojo.deployedmainartifacts", i ) );
         }
     }
 
-    protected void processFile( File file, Map plugins, Map models )
+    protected void processFile( File file, Map<String, EclipseOsgiPlugin> plugins, Map<String, Model> models )
         throws MojoExecutionException, MojoFailureException
     {
         EclipseOsgiPlugin plugin = getEclipsePlugin( file );
@@ -248,7 +339,8 @@ public class EclipseToMavenMojo
         processPlugin( plugin, model, plugins, models );
     }
 
-    protected void processPlugin( EclipseOsgiPlugin plugin, Model model, Map plugins, Map models )
+    protected void processPlugin(
+        EclipseOsgiPlugin plugin, Model model, Map<String, EclipseOsgiPlugin> plugins, Map<String, Model> models )
         throws MojoExecutionException, MojoFailureException
     {
         plugins.put( getKey( model ), plugin );
@@ -257,43 +349,144 @@ public class EclipseToMavenMojo
 
     protected String getKey( Model model )
     {
-        return model.getGroupId() + "." + model.getArtifactId();
+        return model.getGroupId() + ":" + model.getArtifactId() + ":" + model.getVersion();
     }
 
-    private String getKey( Dependency dependency )
+    protected String getSourceKey( Model model )
     {
-        return dependency.getGroupId() + "." + dependency.getArtifactId();
+        return model.getGroupId() + ":" + model.getArtifactId() + ".source" + ":" + model.getVersion();
+    }
+
+    private String getModuleKey( Model model )
+    {
+        return model.getGroupId() + ":" + model.getArtifactId();
+    }
+
+    private String getModuleKey( Dependency dep )
+    {
+        return dep.getGroupId() + ":" + dep.getArtifactId();
     }
 
     /**
-     * Resolve version ranges in the model provided, overriding version ranges with versions from the dependency in the
-     * provided map of models. TODO doesn't check if the version is in range, it just overwrites it
+     * Resolve dependency versions in the models, that did not declare a version at all.
      *
-     * @param model
      * @param models
      * @throws MojoFailureException
      */
-    protected void resolveVersionRanges( Model model, Map models )
+    protected void resolveVersions( Map<String, Model> models )
         throws MojoFailureException
     {
-        for ( Dependency dep : model.getDependencies() )
+        Map<String, SortedSet<ArtifactVersion>> allVersions = new HashMap<String, SortedSet<ArtifactVersion>>();
+        for ( Model model : models.values() )
         {
-            if ( dep.getVersion().contains( "[" ) || dep.getVersion().contains( "(" ) )
+            String key = getModuleKey( model );
+            SortedSet<ArtifactVersion> versions = allVersions.get( key );
+            if ( versions == null )
             {
-                String key = getKey( model );
-                Model dependencyModel = (Model) models.get( getKey( dep ) );
-                if ( dependencyModel != null )
+                versions = new TreeSet<ArtifactVersion>( Collections.reverseOrder() );
+                allVersions.put( key, versions );
+            }
+            versions.add( new DefaultArtifactVersion( model.getVersion() ) );
+        }
+
+        for ( Model model : models.values() )
+        {
+            for ( Dependency dep : model.getDependencies() )
+            {
+                try
                 {
-                    dep.setVersion( dependencyModel.getVersion() );
+                    String versionRange = dep.getVersion();
+                    if ( ANY_VERSION.equals( versionRange ) )
+                    {
+                        String key = getModuleKey( dep );
+                        Set<ArtifactVersion> versions = allVersions.get( key );
+                        if ( versions != null )
+                        {
+                            dep.setVersion( versions.iterator().next().toString() );
+                        }
+                    }
+                    else if ( "[(".indexOf( versionRange.charAt( 0 ) ) == 0 )
+                    {
+                        if ( resolveVersionRanges )
+                        {
+                            String key = getModuleKey( dep );
+                            Set<ArtifactVersion> versions = allVersions.get( key );
+                            if ( versions != null )
+                            {
+                                selectVersion( dep, versionRange, versions );
+                            }
+                        }
+                    }
+                    else if ( resolveRecommendedVersions )
+                    {
+                        String key = getModuleKey( dep );
+                        Set<ArtifactVersion> versions = allVersions.get( key );
+                        ArtifactVersion version = new DefaultArtifactVersion( versionRange );
+                        if ( versions != null )
+                        {
+                            if ( !versions.contains( version ) )
+                            {
+                                String lowerBound = String.format( "[%d.%d.%d,",
+                                    version.getMajorVersion(),
+                                    version.getMinorVersion(),
+                                    version.getIncrementalVersion() );
+                                for ( int i = 3; i > 0; --i )
+                                {
+                                    String upperBound = null;
+                                    switch ( i )
+                                    {
+                                        case 3:
+                                            upperBound = String.format( "%d.%d.%d)",
+                                                version.getMajorVersion(),
+                                                version.getMinorVersion(),
+                                                version.getIncrementalVersion() + 1 );
+                                            break;
+
+                                        case 2:
+                                            upperBound = String.format( "%d.%d)",
+                                                version.getMajorVersion(),
+                                                version.getMinorVersion() + 1 );
+                                            break;
+
+                                        case 1:
+                                            upperBound = String.format( "%d)", version.getMajorVersion() + 1 );
+                                            break;
+
+                                        default: break; // satisfy checkstyle
+                                    }
+
+                                    if ( selectVersion( dep, lowerBound + upperBound, versions ) )
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                else
+                catch ( InvalidVersionSpecificationException e )
                 {
                     throw new MojoFailureException(
-                                            Messages.getString( "EclipseToMavenMojo.unabletoresolveversionrange",
-                                                                        new Object[] { dep, key } ) );
+                            Messages.getString( "EclipseToMavenMojo.invalidversionrange",
+                                new Object[] { dep, getKey( model ) } ) );
                 }
             }
         }
+    }
+
+    private boolean selectVersion( Dependency dependency, String versionRange, Set<ArtifactVersion> versions )
+        throws InvalidVersionSpecificationException
+    {
+        VersionRange range = VersionRange.createFromVersionSpec( versionRange );
+        for ( ArtifactVersion version : versions )
+        {
+            if ( range.containsVersion( version ) )
+            {
+                dependency.setVersion( version.toString() );
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -396,7 +589,7 @@ public class EclipseToMavenMojo
             // model.setParent( parent );
 
             // infer license for know projects, everything at eclipse is licensed under EPL
-            // maybe too simplicistic, but better than nothing
+            // maybe too simplistic, but better than nothing
             License license = new License();
             license.setName( "Eclipse Public License - v 1.0" ); 
             license.setUrl( "http://www.eclipse.org/org/documents/epl-v10.html" ); 
@@ -422,7 +615,7 @@ public class EclipseToMavenMojo
      * @param remoteRepo remote repository (if set)
      * @throws MojoExecutionException
      */
-    private void writeArtifact( EclipseOsgiPlugin plugin, Model model, ArtifactRepository remoteRepo )
+    private void writeArtifact( Model model, Map<String, EclipseOsgiPlugin> plugins, ArtifactRepository remoteRepo )
         throws MojoExecutionException
     {
         Writer fw = null;
@@ -434,12 +627,15 @@ public class EclipseToMavenMojo
         Artifact artifact =
             artifactFactory.createArtifact( model.getGroupId(), model.getArtifactId(), model.getVersion(), null,
                                             Constants.PROJECT_PACKAGING_JAR );
+        Artifact sourcesArtifact = !attachSourcePlugins
+            ? null
+            :  artifactFactory.createArtifactWithClassifier( model.getGroupId(), model.getArtifactId(),
+                model.getVersion(), Constants.PROJECT_PACKAGING_JAR, "sources" );
         try
         {
             pomFile = File.createTempFile( "pom-", ".xml" ); 
 
-            // TODO use WriterFactory.newXmlWriter() when plexus-utils is upgraded to 1.4.5+
-            fw = new OutputStreamWriter( new FileOutputStream( pomFile ), "UTF-8" ); 
+            fw = WriterFactory.newWriter( pomFile, "UTF-8" );
             model.setModelEncoding( "UTF-8" ); // to be removed when encoding is detected instead of forced to UTF-8 
             pomFile.deleteOnExit();
             new MavenXpp3Writer().write( fw, model );
@@ -456,19 +652,33 @@ public class EclipseToMavenMojo
             IOUtil.close( fw );
         }
 
+        EclipseOsgiPlugin plugin = plugins.get( getKey( model ) );
+        EclipseOsgiPlugin sourcePlugin = attachSourcePlugins ? plugins.get( getSourceKey( model ) ) : null;
+        File jarFile = null;
+        File jarFileSource = null;
+
         try
         {
-            File jarFile = plugin.getJarFile();
+            jarFile = plugin.getJarFile();
+            jarFileSource = sourcePlugin != null ? sourcePlugin.getJarFile() : null;
 
             if ( remoteRepo != null )
             {
                 deployer.deploy( pomFile, pomArtifact, remoteRepo, localRepository );
                 deployer.deploy( jarFile, artifact, remoteRepo, localRepository );
+                if ( sourcePlugin != null )
+                {
+                    deployer.deploy( jarFileSource, sourcesArtifact, remoteRepo, localRepository );
+                }
             }
             else
             {
                 installer.install( pomFile, pomArtifact, localRepository );
                 installer.install( jarFile, artifact, localRepository );
+                if ( sourcePlugin != null )
+                {
+                    installer.install( jarFileSource, sourcesArtifact, localRepository );
+                }
             }
         }
         catch ( ArtifactDeploymentException e )
@@ -484,7 +694,8 @@ public class EclipseToMavenMojo
         catch ( IOException e )
         {
             throw new MojoExecutionException( 
-                                  Messages.getString( "EclipseToMavenMojo.errorgettingjarfileforplugin", plugin ), e );
+                                  Messages.getString( "EclipseToMavenMojo.errorgettingjarfileforplugin",
+                                      jarFile != null ? sourcePlugin :  plugin ), e );
         }
         finally
         {
@@ -499,7 +710,7 @@ public class EclipseToMavenMojo
     }
 
     /**
-     * The 4th (build) token MUST be separed with "-" and not with "." in maven. A version with 4 dots is not parsed,
+     * The 4th (build) token MUST be separated with "-" and not with "." in maven. A version with 4 dots is not parsed,
      * and the whole string is considered a qualifier. See tests in DefaultArtifactVersion for reference.
      *
      * @param version initial version
@@ -526,7 +737,7 @@ public class EclipseToMavenMojo
                     + StringUtils.substring( version, lastDot + 1, version.length() );
             }
         }
-        return version;
+        return new DefaultArtifactVersion( version ).toString();
     }
 
     /**
@@ -590,7 +801,19 @@ public class EclipseToMavenMojo
      */
     protected String createGroupId( String bundleName )
     {
-        int i = bundleName.lastIndexOf( '.' ); //$NON-NLS-1$
+        int i = 0;
+        int t = groupIdTokens;
+        if ( t < 0 )
+        {
+            i = bundleName.lastIndexOf( '.' ); //$NON-NLS-1$
+        }
+        else if ( t > 0 )
+        {
+            do
+            {
+                i = bundleName.indexOf( '.', i + 1 ); //$NON-NLS-1$
+            } while ( --t > 0 && i > 0 );
+        }
         if ( i > 0 )
         {
             return bundleName.substring( 0, i );
@@ -609,15 +832,15 @@ public class EclipseToMavenMojo
      */
     protected String createArtifactId( String bundleName )
     {
-        int i = bundleName.lastIndexOf( '.' ); //$NON-NLS-1$
-        if ( i > 0 )
+        if ( !useBundleNameAsArtifactId )
         {
-            return bundleName.substring( i + 1 );
+            String groupId = createGroupId( bundleName );
+            if ( bundleName.startsWith( groupId + '.' ) )  //$NON-NLS-1$
+            {
+                return bundleName.substring( groupId.length() + 1 );
+            }
         }
-        else
-        {
-            return bundleName;
-        }
+        return bundleName;
     }
 
     /**
@@ -633,26 +856,26 @@ public class EclipseToMavenMojo
             return new Dependency[0];
         }
 
-        List dependencies = new ArrayList();
+        List<Dependency> dependencies = new ArrayList<Dependency>();
 
         Analyzer analyzer = new Analyzer();
 
-        Map requireBundleHeader = analyzer.parseHeader( requireBundle );
+        @SuppressWarnings( "unchecked" )
+        Map<String, Map<String, String>> requireBundleHeader = analyzer.parseHeader( requireBundle );
 
         // now iterates on bundles and extract dependencies
-        for ( Object o : requireBundleHeader.entrySet() )
+        for ( Map.Entry<String, Map<String, String>> entry : requireBundleHeader.entrySet() )
         {
-            Map.Entry entry = (Map.Entry) o;
-            String bundleName = (String) entry.getKey();
-            Map attributes = (Map) entry.getValue();
+            String bundleName = entry.getKey();
+            Map<String, String> attributes = entry.getValue();
 
-            String version = (String) attributes.get( Analyzer.BUNDLE_VERSION.toLowerCase() );
+            String version = attributes.get( Analyzer.BUNDLE_VERSION.toLowerCase() );
             boolean optional = "optional".equals( attributes.get( "resolution:" ) );
 
             if ( version == null )
             {
-                getLog().info( Messages.getString( "EclipseToMavenMojo.missingversionforbundle", bundleName ) );
-                version = "[0,)"; //$NON-NLS-1$
+                getLog().debug( Messages.getString( "EclipseToMavenMojo.missingversionforbundle", bundleName ) );
+                version = ANY_VERSION;
             }
 
             version = fixBuildNumberSeparator( version );
@@ -667,8 +890,7 @@ public class EclipseToMavenMojo
 
         }
 
-        return (Dependency[]) dependencies.toArray( new Dependency[dependencies.size()] );
-
+        return dependencies.toArray( new Dependency[dependencies.size()] );
     }
 
     /**

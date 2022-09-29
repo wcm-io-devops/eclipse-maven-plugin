@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #%L
+  wcm.io
+  %%
+  Copyright (C) 2019 wcm.io
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/changes/1.0.0"
+    xsi:schemaLocation="http://maven.apache.org/changes/1.0.0 http://maven.apache.org/plugins/maven-changes-plugin/xsd/changes-1.0.0.xsd">
+  <body>
+
+    <release version="3.2.0" date="2022-09-29">
+      <action type="add" dev="jschaible">
+        New parameters for to-maven goal.
+      </action>
+      <action type="update" dev="sseifert">
+        Update dependencies.
+      </action>
+    </release>
+
+    <release version="3.1.0" date="2018-07-11">
+      <action type="add" dev="sseifert">
+        Add support for `filtering` property on additionalConfig files.
+      </action>
+      <action type="add" dev="sseifert">
+        Mark test source folders and test dependencies as "test" for Eclipse 4.8 Photon.
+      </action>
+    </release>
+
+    <release version="3.0.0" date="2016-02-16">
+      <action type="add" dev="sseifert">
+        Initial release based on Apache Maven Eclipse Plugin 2.10.
+      </action>
+      <action type="update" dev="sseifert"><![CDATA[
+        Apply patch from <a href="https://issues.apache.org/jira/browse/MECLIPSE-641">MECLIPSE-641</a> which was never applied to the original code base, but is important for generating the eclipse project settings.
+      ]]></action>
+    </release>
+
+  </body>
+</document>

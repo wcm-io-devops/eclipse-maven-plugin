@@ -1,0 +1,38 @@
+# Build validation
+
+name: Build
+
+on:
+  push:
+    branches-ignore:
+      - master
+      - experimental/**
+  pull_request:
+    branches-ignore:
+      - master
+      - experimental/**
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        java: [8, 11]
+        os: [ubuntu-latest]
+        distribution: [temurin]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+
+      - name: Build and verify
+        run: mvn -s ./.maven-settings.xml -Pcontinuous-integration -B -U clean verify
