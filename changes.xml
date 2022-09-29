@@ -27,6 +27,9 @@
       <action type="add" dev="jschaible">
         New parameters for to-maven goal.
       </action>
+      <action type="update" dev="sseifert">
+        Update dependencies.
+      </action>
     </release>
 
     <release version="3.1.0" date="2018-07-11">
