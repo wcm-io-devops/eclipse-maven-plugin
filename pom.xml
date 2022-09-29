@@ -573,48 +573,6 @@ under the License.
         </plugins>
       </build>
     </profile>    
-    <!-- configuration to deploy into maven central -->
-    <profile>
-      <id>release-profile</id>
-      <activation>
-        <property>
-          <name>performRelease</name>
-          <value>true</value>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <!-- sign the build -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <inherited>false</inherited>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <!-- configure staging process at sonatype.-->
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <inherited>false</inherited>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <!-- Deployed artifacts should go to staging to be reviewed before publish -->
-              <autoReleaseAfterClose>false</autoReleaseAfterClose>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
     <profile>
       <id>only-eclipse</id>
