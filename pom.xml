@@ -52,8 +52,8 @@ under the License.
   </scm>
 
   <issueManagement>
-    <system>JIRA</system>
-    <url>https://wcm-io.atlassian.net/projects/WDEVOP</url>
+    <system>GitHub</system>
+    <url>https://github.com/wcm-io-devops/eclipse-maven-plugin</url>
   </issueManagement>
 
   <ciManagement>
