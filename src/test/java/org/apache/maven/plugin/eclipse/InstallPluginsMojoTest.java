@@ -386,8 +386,6 @@ public class InstallPluginsMojoTest
                 manager.getUnArchiver( (File) null );
                 control.setMatcher( MockControl.ALWAYS_MATCHER );
                 ZipUnArchiver zipUnArchiver = new ZipUnArchiver();
-                zipUnArchiver.enableLogging( new ConsoleLogger( org.codehaus.plexus.logging.Logger.LEVEL_INFO,
-                                                                "console" ) );
                 control.setReturnValue( zipUnArchiver, MockControl.ONE_OR_MORE );
             }
             catch ( NoSuchArchiverException e )
