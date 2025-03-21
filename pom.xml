@@ -254,7 +254,7 @@ under the License.
     <dependency>
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
-      <version>1.0-FCS</version>
+      <version>1.2.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
