@@ -205,7 +205,7 @@ under the License.
     <dependency>
       <groupId>biz.aQute</groupId>
       <artifactId>bndlib</artifactId>
-      <version>0.0.145</version>
+      <version>0.0.357</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
