@@ -86,7 +86,7 @@ under the License.
 
     <mavenVersion>2.2.1</mavenVersion>
     <maven.test.jvmargs>-Xmx1024m</maven.test.jvmargs>
-    <surefire.version>2.18.1</surefire.version>
+    <surefire.version>2.22.2</surefire.version>
     <mavenPluginToolsVersion>3.6.0</mavenPluginToolsVersion>
 
     <!-- repository settings -->
