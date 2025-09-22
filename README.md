@@ -1,6 +1,6 @@
 <img src="https://wcm.io/images/favicon-16@2x.png"/> Eclipse Maven Plugin
 ======
-[![Build](https://github.com/wcm-io-devops/eclipse-maven-plugin/workflows/Build/badge.svg?branch=develop)](https://github.com/wcm-io-devops/eclipse-maven-plugin/actions?query=workflow%3ABuild+branch%3Adevelop)
+[![Build](https://github.com/wcm-io-devops/eclipse-maven-plugin/actions/workflows/maven-build.yml/badge.svg?branch=develop)](https://github.com/wcm-io-devops/eclipse-maven-plugin/actions?query=workflow%3ABuild+branch%3Adevelop)
 [![Maven Central](https://img.shields.io/maven-central/v/io.wcm.devops.maven.plugins/eclipse-maven-plugin)](https://repo1.maven.org/maven2/io/wcm/devops/maven/plugins/eclipse-maven-plugin)
 
 The Eclipse Plugin is used to generate Eclipse IDE files (.project, .classpath and the .settings folder) from a POM.
