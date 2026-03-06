@@ -533,12 +533,10 @@ public abstract class AbstractIdeSupportMojo
                                                        localRepo, project.getRemoteArtifactRepositories(),
                                                        getArtifactMetadataSource(), null, listeners );
                     }
-                    catch ( ArtifactResolutionException e )
+                    catch ( RuntimeException e )
                     {
                         getLog().debug( e.getMessage(), e );
-                        getLog().error( Messages.getString( "AbstractIdeSupportMojo.artifactresolution", new Object[] {
-                                                            e.getGroupId(), e.getArtifactId(), e.getVersion(),
-                                                                e.getMessage() } ) );
+                        getLog().error( "Artifact resolution failed: " + e.getMessage() );
 
                         // if we are here artifactResolutionResult is null, create a project without dependencies but
                         // don't fail
