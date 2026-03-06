@@ -24,6 +24,15 @@
     xsi:schemaLocation="http://maven.apache.org/changes/2.0.0 https://maven.apache.org/xsd/changes-2.0.0.xsd">
   <body>
 
+    <release version="3.2.2" date="not released">
+      <action type="update" dev="sseifert" issue="107">
+        Raise minimum maven version to 3.3.9, minimum java build version to Java 17.
+      </action>
+      <action type="update" dev="sseifert">
+        Update dependencies.
+      </action>
+    </release>
+
     <release version="3.2.0" date="2022-09-29">
       <action type="add" dev="jschaible">
         New parameters for to-maven goal.
