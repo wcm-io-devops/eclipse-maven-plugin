@@ -58,7 +58,6 @@ import org.apache.maven.shared.test.plugin.BuildTool;
 import org.apache.maven.shared.test.plugin.PluginTestTool;
 import org.apache.maven.shared.test.plugin.ProjectTool;
 import org.apache.maven.shared.test.plugin.TestToolsException;
-import org.codehaus.classworlds.ClassRealm;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
@@ -223,12 +222,6 @@ public abstract class AbstractEclipsePluginIT
 
             if (container != null) {
                 container.dispose();
-
-                ClassRealm realm = container.getContainerRealm();
-
-                if (realm != null) {
-                    realm.getWorld().disposeRealm(realm.getId());
-                }
             }
         }
     }
