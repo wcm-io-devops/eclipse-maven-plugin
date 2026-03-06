@@ -28,7 +28,8 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-import org.apache.maven.execution.DefaultRuntimeInformation;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.execution.RuntimeInformation;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Resource;
@@ -52,8 +53,13 @@ public class EclipsePluginUnitTest
         throws Exception
     {
         EclipsePlugin mojo = new EclipsePlugin();
-        DefaultRuntimeInformation rti = new DefaultRuntimeInformation();
-        rti.initialize();
+        RuntimeInformation rti = new RuntimeInformation()
+        {
+            public org.apache.maven.artifact.versioning.ArtifactVersion getApplicationVersion()
+            {
+                return new DefaultArtifactVersion( "3.3.9" );
+            }
+        };
         Field field = AbstractIdeSupportMojo.class.getDeclaredField( "runtimeInformation" );
         field.setAccessible( true );
         field.set( mojo, rti );
