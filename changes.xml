@@ -26,7 +26,7 @@
 
     <release version="3.2.2" date="not released">
       <action type="update" dev="sseifert" issue="107">
-        Raise minimum maven version to 3.3.9, minimum java build version to Java 17.
+        Raise minimum maven version to 3.8.1, minimum java build version to Java 17.
       </action>
       <action type="update" dev="sseifert">
         Update dependencies.
