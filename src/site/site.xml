@@ -19,22 +19,17 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<project xmlns="http://maven.apache.org/DECORATION/1.0.0"
+<site name="devops.wcm.io"
+  xmlns="http://maven.apache.org/SITE/2.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/SITE/2.0.0 https://maven.apache.org/xsd/site-2.0.0.xsd">
 
-  <custom>
-    <reflowSkin>
-      <!-- Split menus in the bottom navigation -->
-      <bottomNav maxSpan="9" >
-        <column>Overview</column>
-        <column>Configuration</column>
-        <column>Examples</column>
-        <column>reports</column>
-      </bottomNav>
-    </reflowSkin>
-  </custom>
-  
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>2.1.0</version>
+  </skin>
+
   <body>
 
     <menu name="Overview">
@@ -65,4 +60,4 @@ under the License.
 
   </body>
 
-</project>
+</site>

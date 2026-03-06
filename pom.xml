@@ -643,17 +643,10 @@ under the License.
 
   <reporting>
     <plugins>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-        <configuration>
-          <requirements>
-            <maven>${mavenVersion}</maven>
-          </requirements>
-        </configuration>
+        <artifactId>maven-plugin-report-plugin</artifactId>
       </plugin>
-
     </plugins>
   </reporting>
 
