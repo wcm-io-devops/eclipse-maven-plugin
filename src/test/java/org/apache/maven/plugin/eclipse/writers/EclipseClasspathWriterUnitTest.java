@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
 
-import junit.framework.TestCase;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.eclipse.EclipseSourceDir;
 import org.apache.maven.plugin.eclipse.writers.testutils.TestEclipseWriterConfig;
@@ -38,12 +36,15 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
+import junit.framework.TestCase;
+
 public class EclipseClasspathWriterUnitTest
     extends TestCase
 {
 
     private TestFileManager fileManager = new TestFileManager( "EclipseClasspathWriter.unitTest.", "" );
 
+    @Override
     protected void tearDown()
         throws IOException
     {
@@ -101,7 +102,7 @@ public class EclipseClasspathWriterUnitTest
         assertTrue( "test resources (minus custom output dir) classpath entry not found.",
                     testResourcePath.selectSingleNode( doc ) != null );
 
-        XPath stdOutputPath = XPath.newInstance( "//classpathentry[@kind='output' && @path='target/classes']" );
+        XPath stdOutputPath = XPath.newInstance("//classpathentry[@kind='output' and @path='target/classes']");
 
         assertTrue( "standard output classpath entry not found.", stdOutputPath.selectSingleNode( doc ) != null );
 
@@ -165,6 +166,7 @@ public class EclipseClasspathWriterUnitTest
     private static final class TestLog
         extends SystemStreamLog
     {
+        @Override
         public boolean isDebugEnabled()
         {
             return true;
