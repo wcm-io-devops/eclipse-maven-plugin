@@ -22,8 +22,7 @@ import junit.framework.TestCase;
 import org.apache.maven.plugin.eclipse.TempEclipseWorkspace;
 import org.apache.maven.plugin.eclipse.WorkspaceConfiguration;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.shared.tools.easymock.MockManager;
-import org.easymock.MockControl;
+import org.easymock.EasyMock;
 
 /**
  * @author <a href="mailto:baerrach@apache.org">Barrie Treloar</a>
@@ -42,9 +41,8 @@ public class ReadWorkspaceLocationsTest
 //    private static final File WORKSPACE_PROJECT_METADATA_DIRECTORY =
 //        new File( WORKSPACE_DIRECTORY, ReadWorkspaceLocations.METADATA_PLUGINS_ORG_ECLIPSE_CORE_RESOURCES_PROJECTS );
 
-    private MockManager mm = new MockManager();
-private File workspaceLocation;
-private File metaDataDirectory;
+    private File workspaceLocation;
+    private File metaDataDirectory;
 
     /**
      * {@inheritDoc}
@@ -125,40 +123,35 @@ private File metaDataDirectory;
     public void testReadDefinedServers_PrefsFileDoesNotExist()
         throws Exception
     {
-        MockControl logControl = MockControl.createControl( Log.class );
-        mm.add( logControl );
+        Log logger = EasyMock.createNiceMock( Log.class );
+        EasyMock.replay( logger );
 
-        Log logger = (Log) logControl.getMock();
         WorkspaceConfiguration workspaceConfiguration = new WorkspaceConfiguration();
         workspaceConfiguration.setWorkspaceDirectory( new File( "/does/not/exist" ) );
-
-        mm.replayAll();
 
         ReadWorkspaceLocations objectUnderTest = new ReadWorkspaceLocations();
         Map<String, String> servers = objectUnderTest.readDefinedServers( workspaceConfiguration, logger );
 
-        mm.verifyAll();
+        EasyMock.verify( logger );
         assertTrue( servers.isEmpty() );
     }
 
     public void testReadDefinedServers_PrefsFileExistsWithMissingRuntimes()
         throws Exception
     {
-        MockControl logControl = MockControl.createControl( Log.class );
-        mm.add( logControl );
+        Log logger = EasyMock.createNiceMock( Log.class );
+        EasyMock.replay( logger );
 
-        Log logger = (Log) logControl.getMock();
         WorkspaceConfiguration workspaceConfiguration = new WorkspaceConfiguration();
         File prefsFile =
             new File(
                       "target/test-classes/eclipse/dynamicWorkspace/workspace/.metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.wst.server.core.prefs" );
         workspaceConfiguration.setWorkspaceDirectory( prefsFile );
-        mm.replayAll();
 
         ReadWorkspaceLocations objectUnderTest = new ReadWorkspaceLocations();
         Map<String, String> servers = objectUnderTest.readDefinedServers( workspaceConfiguration, logger );
 
-        mm.verifyAll();
+        EasyMock.verify( logger );
         assertTrue( servers.isEmpty() );
     }
 
