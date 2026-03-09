@@ -14,7 +14,7 @@ So we maintain a fork of the original plugin here and publish it under Apache 2.
 Documentation:
 
 * [wcm.io DevOps Eclipse Maven Plugin Documentation](https://devops.wcm.io/maven/plugins/eclipse-maven-plugin/)
-* [Changes since the original Maven Eclipse Plugin 2.10.](https://devops.wcm.io/maven/plugins/eclipse-maven-plugin/changes-report.html)
+* [Changes since the original Maven Eclipse Plugin 2.10.](https://devops.wcm.io/maven/plugins/eclipse-maven-plugin/changes.html)
 
 To use this in your projects update all your POMs to use
 
