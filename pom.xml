@@ -82,12 +82,16 @@ under the License.
   </developers>
 
   <properties>
-    <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
-
     <mavenVersion>3.8.1</mavenVersion>
     <maven.test.jvmargs>-Xmx1024m</maven.test.jvmargs>
     <surefire.version>3.5.5</surefire.version>
     <mavenPluginToolsVersion>3.15.2</mavenPluginToolsVersion>
+
+    <!-- site settings -->
+    <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
+    <site.url>https://devops.wcm.io</site.url>
+    <site.deploy.id>ssh-wcm.io</site.deploy.id>
+    <site.deploy.url>scm:git:https://github.com/wcm-io-devops/wcm-io-devops.github.io.git</site.deploy.url>
 
     <!-- repository settings -->
     <distribution.snapshotRepositoryId>sonatype-central-snapshots</distribution.snapshotRepositoryId>
