@@ -338,6 +338,12 @@ under the License.
               <version>${surefire.version}</version>
             </dependency>
           </dependencies>
+          <configuration>
+            <systemPropertyVariables>
+              <maven.home>${maven.home}</maven.home>
+            </systemPropertyVariables>
+            <argLine>${maven.test.jvmargs}</argLine>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.rat</groupId>
@@ -546,12 +552,6 @@ under the License.
                   <goal>integration-test</goal>
                   <goal>verify</goal>
                 </goals>
-                <configuration>
-                <systemPropertyVariables>
-                   <maven.home>${maven.home}</maven.home>
-                 </systemPropertyVariables>
-                 <argLine>${maven.test.jvmargs}</argLine>
-                </configuration>
               </execution>
             </executions>
           </plugin>
