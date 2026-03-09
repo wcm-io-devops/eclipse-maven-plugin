@@ -98,9 +98,6 @@ under the License.
     <distribution.snapshotRepositoryUrl>https://central.sonatype.com/repository/maven-snapshots</distribution.snapshotRepositoryUrl>
     <distribution.releaseRepositoryId>sonatype-central</distribution.releaseRepositoryId>
     <distribution.releaseRepositoryUrl>https://central.sonatype.com</distribution.releaseRepositoryUrl>
-
-    <!-- Skip integration tests by default -->
-    <skipITs>true</skipITs>
   </properties>
 
   <dependencies>
