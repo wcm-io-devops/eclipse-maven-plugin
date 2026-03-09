@@ -58,6 +58,7 @@ import org.apache.maven.shared.test.plugin.BuildTool;
 import org.apache.maven.shared.test.plugin.PluginTestTool;
 import org.apache.maven.shared.test.plugin.ProjectTool;
 import org.apache.maven.shared.test.plugin.TestToolsException;
+import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
@@ -129,6 +130,17 @@ public abstract class AbstractEclipsePluginIT
     private static final Collection<String> IGNORED_DIRS = new HashSet<String>( Arrays.asList( ".svn" ) );
     
     private File mavenHome;
+
+    /**
+     * Configure the Plexus container to use GLOBAL_INDEX classpath scanning so that
+     * JSR-330 components (e.g. from maven-resolver-impl) are discovered via their
+     * META-INF/sisu/javax.inject.Named index files across all JAR files on the classpath.
+     */
+    @Override
+    protected void customizeContainerConfiguration( ContainerConfiguration configuration )
+    {
+        configuration.setClassPathScanning( "GLOBAL_INDEX" );
+    }
 
     /**
      * @see org.codehaus.plexus.PlexusTestCase#setUp()
