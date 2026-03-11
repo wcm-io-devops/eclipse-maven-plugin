@@ -22,7 +22,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +48,12 @@ import org.apache.maven.artifact.handler.manager.DefaultArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.DefaultArtifactRepository;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.model.Build;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.Repository;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.eclipse.ExecutionFailedException;
 import org.apache.maven.plugin.eclipse.Messages;
@@ -55,14 +63,15 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.test.plugin.BuildTool;
-import org.apache.maven.shared.test.plugin.PluginTestTool;
-import org.apache.maven.shared.test.plugin.ProjectTool;
 import org.apache.maven.shared.test.plugin.TestToolsException;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.WriterFactory;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -81,8 +90,6 @@ public abstract class AbstractEclipsePluginIT
 
     private BuildTool buildTool;
 
-    private ProjectTool projectTool;
-
     /**
      * Test repository directory.
      */
@@ -96,12 +103,12 @@ public abstract class AbstractEclipsePluginIT
     /**
      * Group-Id for running test builds.
      */
-    protected static final String GROUP_ID = "org.apache.maven.plugins";
+    protected static final String GROUP_ID = "io.wcm.devops.maven.plugins";
 
     /**
      * Artifact-Id for running test builds.
      */
-    protected static final String ARTIFACT_ID = "maven-eclipse-plugin";
+    protected static final String ARTIFACT_ID = "eclipse-maven-plugin";
 
     /**
      * Version under which the plugin was installed to the test-time local repository for running test builds.
@@ -157,8 +164,6 @@ public abstract class AbstractEclipsePluginIT
 
         buildTool = (BuildTool) lookup( BuildTool.ROLE, "default" );
 
-        projectTool = (ProjectTool) lookup( ProjectTool.ROLE, "default" );
-
         String mavenHome = System.getProperty( "maven.home" );
 
         // maven.home is set by surefire when the test is run with maven, but better make the test
@@ -188,11 +193,10 @@ public abstract class AbstractEclipsePluginIT
         {
             if ( !installed )
             {
-                PluginTestTool pluginTestTool = (PluginTestTool) lookup( PluginTestTool.ROLE, "default" );
+                System.out.println( "*** Installing test version of the Eclipse plugin to: "
+                    + localRepositoryDirectory + "\n" );
 
-                localRepositoryDirectory =
-                    pluginTestTool.preparePluginForUnitTestingWithMavenBuilds( PomFile, "test",
-                                                                               localRepositoryDirectory );
+                installPluginForTesting();
 
                 System.out.println( "*** Installed test-version of the Eclipse plugin to: " + localRepositoryDirectory
                     + "\n" );
@@ -345,7 +349,7 @@ public abstract class AbstractEclipsePluginIT
         MavenProject project = readProject( pom );
 
         String outputDirPath =
-            IdeUtils.getPluginSetting( project, "org.apache.maven.plugins:maven-eclipse-plugin", "outputDir", null );
+            IdeUtils.getPluginSetting( project, "io.wcm.devops.maven.plugins:eclipse-maven-plugin", "outputDir", null );
         File projectOutputDir = basedir;
 
         if ( outputDirPath != null )
@@ -409,7 +413,7 @@ public abstract class AbstractEclipsePluginIT
         MavenProject project = readProject( pom );
 
         String outputDirPath =
-            IdeUtils.getPluginSetting( project, "org.apache.maven.plugins:maven-eclipse-plugin", "outputDir", null );
+            IdeUtils.getPluginSetting( project, "io.wcm.devops.maven.plugins:eclipse-maven-plugin", "outputDir", null );
         File outputDir;
         File projectOutputDir = basedir;
 
@@ -510,7 +514,21 @@ public abstract class AbstractEclipsePluginIT
     protected MavenProject readProject( File pom )
         throws TestToolsException
     {
-        return projectTool.readProject( pom, localRepositoryDirectory );
+        Reader reader = null;
+        try
+        {
+            reader = ReaderFactory.newXmlReader( pom );
+            Model model = new MavenXpp3Reader().read( reader );
+            return new MavenProject( model );
+        }
+        catch ( Exception e )
+        {
+            throw new TestToolsException( "Error reading MavenProject from POM: " + pom, e );
+        }
+        finally
+        {
+            IOUtil.close( reader );
+        }
     }
 
     protected String getPluginCLISpecification()
@@ -530,6 +548,109 @@ public abstract class AbstractEclipsePluginIT
         pluginSpec += VERSION + ":";
 
         return pluginSpec;
+    }
+
+    /**
+     * Install the plugin under test with version {@link #VERSION} to {@link #localRepositoryDirectory} by running
+     * {@code mvn install} as a subprocess. This avoids using the Maven API directly (which fails in the test
+     * container without an active RepositorySystemSession) and instead relies on a subprocess Maven invocation.
+     *
+     * @throws Exception if the installation fails
+     */
+    private void installPluginForTesting()
+        throws Exception
+    {
+        // Read the project POM and create a modified version with test version + isolated build dir
+        Model model;
+        Reader reader = ReaderFactory.newXmlReader( PomFile );
+        try
+        {
+            model = new MavenXpp3Reader().read( reader );
+        }
+        finally
+        {
+            IOUtil.close( reader );
+        }
+
+        model.setVersion( VERSION );
+
+        Build build = model.getBuild();
+        if ( build == null )
+        {
+            build = new Build();
+            model.setBuild( build );
+        }
+        String buildDirectory =
+            ( build.getDirectory() != null ? build.getDirectory() : "target" ) + "/it-build-target";
+        build.setDirectory( buildDirectory );
+        build.setOutputDirectory( buildDirectory + "/classes" );
+
+        // Skip unit tests to avoid a recursive test-and-build loop
+        Plugin surefirePlugin = null;
+        for ( Plugin p : build.getPlugins() )
+        {
+            if ( "maven-surefire-plugin".equals( p.getArtifactId() ) )
+            {
+                surefirePlugin = p;
+                break;
+            }
+        }
+        if ( surefirePlugin == null )
+        {
+            surefirePlugin = new Plugin();
+            surefirePlugin.setArtifactId( "maven-surefire-plugin" );
+            build.addPlugin( surefirePlugin );
+        }
+        Xpp3Dom surefireConfig = (Xpp3Dom) surefirePlugin.getConfiguration();
+        if ( surefireConfig == null )
+        {
+            surefireConfig = new Xpp3Dom( "configuration" );
+            surefirePlugin.setConfiguration( surefireConfig );
+        }
+        Xpp3Dom skipTests = new Xpp3Dom( "skip" );
+        skipTests.setValue( "true" );
+        surefireConfig.addChild( skipTests );
+
+        // Add the system local repository as a remote repository so the subprocess can resolve
+        // dependencies even when the test-local-repository is used as the local repo
+        String systemLocalRepoUrl = new File( System.getProperty( "user.home" ), ".m2/repository" ).toURI().toURL()
+            .toExternalForm();
+        Repository localAsRemote = new Repository();
+        localAsRemote.setId( "testing.systemLocalRepo" );
+        localAsRemote.setUrl( systemLocalRepoUrl );
+        model.addRepository( localAsRemote );
+        model.addPluginRepository( localAsRemote );
+
+        // Write the staged POM
+        File stagedPom = new File( PomFile.getParentFile(), "pom-" + VERSION + ".xml" );
+        stagedPom.deleteOnExit();
+        Writer writer = WriterFactory.newXmlWriter( stagedPom );
+        try
+        {
+            new MavenXpp3Writer().write( writer, model );
+        }
+        finally
+        {
+            IOUtil.close( writer );
+        }
+
+        // Run mvn install with the staged POM, pointing to the test local repository
+        File buildLog = new File( "target/test-build-logs/setup.build.log" );
+        buildLog.getParentFile().mkdirs();
+
+        Properties properties = new Properties();
+        List<String> goals = Collections.singletonList( "install" );
+
+        InvocationRequest request = buildTool.createBasicInvocationRequest( stagedPom, properties, goals, buildLog );
+        request.setLocalRepositoryDirectory( localRepositoryDirectory );
+
+        InvocationResult result = buildTool.executeMaven( request );
+        if ( result.getExitCode() != 0 )
+        {
+            throw new Exception(
+                "Plugin installation for testing failed with exit code " + result.getExitCode()
+                    + ". See build log: " + buildLog.getAbsolutePath() );
+        }
     }
 
     /**
