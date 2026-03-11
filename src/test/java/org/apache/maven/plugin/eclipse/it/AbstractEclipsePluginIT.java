@@ -580,8 +580,9 @@ public abstract class AbstractEclipsePluginIT
             build = new Build();
             model.setBuild( build );
         }
-        String buildDirectory =
-            ( build.getDirectory() != null ? build.getDirectory() : "target" ) + "/it-build-target";
+        String existingBuildDir = build.getDirectory();
+        String baseBuildDir = ( existingBuildDir != null && !existingBuildDir.isEmpty() ) ? existingBuildDir : "target";
+        String buildDirectory = baseBuildDir + "/it-build-target";
         build.setDirectory( buildDirectory );
         build.setOutputDirectory( buildDirectory + "/classes" );
 
@@ -613,8 +614,8 @@ public abstract class AbstractEclipsePluginIT
 
         // Add the system local repository as a remote repository so the subprocess can resolve
         // dependencies even when the test-local-repository is used as the local repo
-        String systemLocalRepoUrl = new File( System.getProperty( "user.home" ), ".m2/repository" ).toURI().toURL()
-            .toExternalForm();
+        String userHome = System.getProperty( "user.home", System.getProperty( "java.io.tmpdir", "." ) );
+        String systemLocalRepoUrl = new File( userHome, ".m2/repository" ).toURI().toURL().toExternalForm();
         Repository localAsRemote = new Repository();
         localAsRemote.setId( "testing.systemLocalRepo" );
         localAsRemote.setUrl( systemLocalRepoUrl );
@@ -622,7 +623,12 @@ public abstract class AbstractEclipsePluginIT
         model.addPluginRepository( localAsRemote );
 
         // Write the staged POM
-        File stagedPom = new File( PomFile.getParentFile(), "pom-" + VERSION + ".xml" );
+        File pomParentDir = PomFile.getParentFile();
+        if ( pomParentDir == null )
+        {
+            pomParentDir = new File( "." );
+        }
+        File stagedPom = new File( pomParentDir, "pom-" + VERSION + ".xml" );
         stagedPom.deleteOnExit();
         Writer writer = WriterFactory.newXmlWriter( stagedPom );
         try
