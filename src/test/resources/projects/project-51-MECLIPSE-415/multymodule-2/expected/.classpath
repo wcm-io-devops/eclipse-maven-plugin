@@ -15,7 +15,7 @@
       <attribute value="/WEB-INF/lib" name="org.eclipse.jst.component.dependency"/>
     </attributes>
   </classpathentry>
-  <classpathentry kind="lib" path="${basedir}/target/test-classes/projects/project-51-MECLIPSE-415/multymodule-1/refproject-sysdep.jar"/>
+  <classpathentry kind="lib" path="/home/runner/work/eclipse-maven-plugin/eclipse-maven-plugin/target/test-classes/projects/project-51-MECLIPSE-415/multymodule-1/refproject-sysdep.jar"/>
   <classpathentry kind="var" path="M2_REPO/eclipsetest/direct-compile/1.0/direct-compile-1.0.jar">
     <attributes>
       <attribute value="/WEB-INF/lib" name="org.eclipse.jst.component.dependency"/>
@@ -26,7 +26,11 @@
       <attribute value="/WEB-INF/lib" name="org.eclipse.jst.component.dependency"/>
     </attributes>
   </classpathentry>
-  <classpathentry kind="var" path="M2_REPO/eclipsetest/direct-test/1.0/direct-test-1.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/eclipsetest/direct-test/1.0/direct-test-1.0.jar">
+    <attributes>
+      <attribute value="true" name="test"/>
+    </attributes>
+  </classpathentry>
   <classpathentry kind="var" path="M2_REPO/eclipsetest/direct-provided/1.0/direct-provided-1.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/eclipsetest/direct-optional/1.0/direct-optional-1.0.jar">
     <attributes>
