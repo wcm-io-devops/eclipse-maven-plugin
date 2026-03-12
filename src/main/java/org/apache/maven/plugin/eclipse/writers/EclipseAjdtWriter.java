@@ -27,7 +27,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.eclipse.Messages;import org.apache.maven.plugin.ide.IdeDependency;
+import org.apache.maven.plugin.eclipse.Messages;
+import org.apache.maven.plugin.ide.IdeDependency;
 import org.apache.maven.plugin.ide.IdeUtils;
 
 /**
