@@ -459,9 +459,9 @@ public class EclipseWriterConfig
     }
 
     /**
-     * Setter for <code>buildCommands</code>.
+     * Setter for <code>wtpapplicationxml</code>.
      * 
-     * @param buildCommands The buildCommands to set.
+     * @param wtpapplicationxml The wtpapplicationxml to set.
      */
     public void setWtpapplicationxml( boolean wtpapplicationxml )
     {
@@ -557,7 +557,7 @@ public class EclipseWriterConfig
     /**
      * Returns the jeeversion
      * 
-     * @param jeeversion the jeeversion
+     * @param jeeVersion the jeeVersion
      */
     public void setJeeVersion( String jeeVersion )
     {

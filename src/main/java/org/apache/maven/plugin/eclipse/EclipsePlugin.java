@@ -189,7 +189,7 @@ public class EclipsePlugin
      * List of artifacts, represented as <code>groupId:artifactId</code>, to exclude from the eclipse classpath, being
      * provided by some eclipse classPathContainer.
      *
-     * @see http://jira.codehaus.org/browse/MECLIPSE-79
+     * @see <a href="http://jira.codehaus.org/browse/MECLIPSE-79">MECLIPSE-79</a>
      * @since 2.5
      */
     @Parameter
@@ -293,6 +293,7 @@ public class EclipsePlugin
      *
      * @deprecated use downloadSources
      */
+    @Deprecated
     @Parameter( property = "eclipse.downloadSources" )
     private boolean eclipseDownloadSources;
 
