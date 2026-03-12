@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<modulemap:EARProjectMap xmi:version="2.0" xmlns:modulemap="modulemap.xmi" xmi:id="EARProjectMap_1773303638647" xmlns:application="application.xmi" xmlns:xmi="http://www.omg.org/XMI">
-  <mappings xmi:id="ModuleMapping_1773303638648" projectName="project-rad-5_2">
-    <module xmi:type="application:WebModule" href="META-INF/application.xml#WebModule_1773303638648"/>
+<modulemap:EARProjectMap xmlns:xmi="http://www.omg.org/XMI" xmlns:application="application.xmi" xmi:version="2.0" xmlns:modulemap="modulemap.xmi" xmi:id="EARProjectMap_1245448792187">
+  <mappings projectName="project-rad-5_2" xmi:id="ModuleMapping_00000000">
+    <module xmi:type="application:WebModule" href="META-INF/application.xml#WebModule_00000000"/>
   </mappings>
-  <mappings xmi:id="ModuleMapping_1773303638649" projectName="project-rad-5_3">
-    <module xmi:type="application:EjbModule" href="META-INF/application.xml#EjbModule_1773303638649"/>
+  <mappings projectName="project-rad-5_3" xmi:id="ModuleMapping_00000000">
+    <module xmi:type="application:EjbModule" href="META-INF/application.xml#EjbModule_00000000"/>
   </mappings>
 </modulemap:EARProjectMap>
