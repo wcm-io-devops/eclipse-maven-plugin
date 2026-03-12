@@ -2048,7 +2048,7 @@ public class EclipsePlugin
         Build build = mavenProject.getBuild();
         if ( build != null )
         {
-            String eclipsePlugin = "org.apache.maven.plugins:maven-eclipse-plugin";
+            String eclipsePlugin = "io.wcm.devops.maven.plugins:eclipse-maven-plugin";
             Plugin plugin = (Plugin) build.getPluginsAsMap().get( eclipsePlugin );
             if ( plugin == null && build.getPluginManagement() != null )
             {

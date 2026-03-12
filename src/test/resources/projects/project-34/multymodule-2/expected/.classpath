@@ -26,7 +26,11 @@
       <attribute value="/WEB-INF/lib" name="org.eclipse.jst.component.dependency"/>
     </attributes>
   </classpathentry>
-  <classpathentry kind="var" path="M2_REPO/eclipsetest/direct-test/1.0/direct-test-1.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/eclipsetest/direct-test/1.0/direct-test-1.0.jar">
+    <attributes>
+      <attribute value="true" name="test"/>
+    </attributes>
+  </classpathentry>
   <classpathentry kind="var" path="M2_REPO/eclipsetest/direct-provided/1.0/direct-provided-1.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/eclipsetest/direct-optional/1.0/direct-optional-1.0.jar">
     <attributes>

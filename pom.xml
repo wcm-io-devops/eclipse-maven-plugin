@@ -98,9 +98,6 @@ under the License.
     <distribution.snapshotRepositoryUrl>https://central.sonatype.com/repository/maven-snapshots</distribution.snapshotRepositoryUrl>
     <distribution.releaseRepositoryId>sonatype-central</distribution.releaseRepositoryId>
     <distribution.releaseRepositoryUrl>https://central.sonatype.com</distribution.releaseRepositoryUrl>
-
-    <!-- Skip integration tests by default -->
-    <skipITs>true</skipITs>
   </properties>
 
   <dependencies>
@@ -179,7 +176,7 @@ under the License.
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>3.0.24</version>
+      <version>3.2.1</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -341,6 +338,12 @@ under the License.
               <version>${surefire.version}</version>
             </dependency>
           </dependencies>
+          <configuration>
+            <systemPropertyVariables>
+              <maven.home>${maven.home}</maven.home>
+            </systemPropertyVariables>
+            <argLine>${maven.test.jvmargs}</argLine>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.rat</groupId>
@@ -549,12 +552,6 @@ under the License.
                   <goal>integration-test</goal>
                   <goal>verify</goal>
                 </goals>
-                <configuration>
-                <systemPropertyVariables>
-                   <maven.home>${maven.home}</maven.home>
-                 </systemPropertyVariables>
-                 <argLine>${maven.test.jvmargs}</argLine>
-                </configuration>
               </execution>
             </executions>
           </plugin>

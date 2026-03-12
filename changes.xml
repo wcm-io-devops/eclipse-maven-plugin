@@ -31,6 +31,9 @@
       <action type="update" dev="sseifert">
         Update dependencies.
       </action>
+      <action type="fix" dev="sseifert" issue="114">
+        Fix: Plugin ignores its own POM configuration due to wrong coordinates.
+      </action>
     </release>
 
     <release version="3.2.0" date="2022-09-29">
