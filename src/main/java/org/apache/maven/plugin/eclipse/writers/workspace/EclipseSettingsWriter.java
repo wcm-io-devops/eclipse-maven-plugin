@@ -31,6 +31,7 @@ import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.eclipse.Messages;
 import org.apache.maven.plugin.eclipse.writers.AbstractEclipseWriter;
+import org.apache.maven.plugin.eclipse.writers.SortedProperties;
 import org.apache.maven.plugin.ide.IdeUtils;
 
 /**
@@ -61,7 +62,7 @@ public class EclipseSettingsWriter
     {
 
         // check if it's necessary to create project specific settings
-        Properties coreSettings = new Properties();
+        Properties coreSettings = new SortedProperties();
 
         String source = IdeUtils.getCompilerSourceVersion( config.getProject() );
         String encoding = IdeUtils.getCompilerSourceEncoding( config.getProject() );
@@ -144,10 +145,11 @@ public class EclipseSettingsWriter
                 {
                     oldCoreSettingsFile = coreSettingsFile;
 
-                    Properties oldsettings = new Properties();
+                    Properties oldsettings = new SortedProperties();
                     oldsettings.load( new FileInputStream( oldCoreSettingsFile ) );
 
-                    Properties newsettings = (Properties) oldsettings.clone();
+                    Properties newsettings = new SortedProperties();
+                    newsettings.putAll( oldsettings );
                     newsettings.putAll( coreSettings );
 
                     if ( !oldsettings.equals( newsettings ) )

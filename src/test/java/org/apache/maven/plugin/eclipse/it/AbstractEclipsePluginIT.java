@@ -51,7 +51,6 @@ import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
-import org.apache.maven.model.Repository;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -551,16 +550,25 @@ public abstract class AbstractEclipsePluginIT
     }
 
     /**
-     * Install the plugin under test with version {@link #VERSION} to {@link #localRepositoryDirectory} by running
-     * {@code mvn install} as a subprocess. This avoids using the Maven API directly (which fails in the test
-     * container without an active RepositorySystemSession) and instead relies on a subprocess Maven invocation.
+     * Install the plugin under test with version {@link #VERSION} to {@link #localRepositoryDirectory}.
+     * <p>
+     * Strategy:
+     * <ol>
+     *   <li>Create a staged POM with version {@code "test"} and an isolated build directory.</li>
+     *   <li>Run {@code mvn package -DskipTests=true} <strong>without</strong> overriding the local
+     *       repository so that the system {@code ~/.m2/repository} (already populated by the main build)
+     *       is used for dependency resolution. This avoids downloading hundreds of MBs into the test
+     *       local repository.</li>
+     *   <li>Copy the resulting jar and POM directly into the test local repository so that the IT
+     *       sub-process builds can find the plugin.</li>
+     * </ol>
      *
-     * @throws Exception if the installation fails
+     * @throws Exception if the build or copy fails
      */
     private void installPluginForTesting()
         throws Exception
     {
-        // Read the project POM and create a modified version with test version + isolated build dir
+        // --- Step 1: read the project POM and create a modified version ---
         Model model;
         Reader reader = ReaderFactory.newXmlReader( PomFile );
         try
@@ -612,16 +620,6 @@ public abstract class AbstractEclipsePluginIT
         skipTests.setValue( "true" );
         surefireConfig.addChild( skipTests );
 
-        // Add the system local repository as a remote repository so the subprocess can resolve
-        // dependencies even when the test-local-repository is used as the local repo
-        String userHome = System.getProperty( "user.home", System.getProperty( "java.io.tmpdir", "." ) );
-        String systemLocalRepoUrl = new File( userHome, ".m2/repository" ).toURI().toURL().toExternalForm();
-        Repository localAsRemote = new Repository();
-        localAsRemote.setId( "testing.systemLocalRepo" );
-        localAsRemote.setUrl( systemLocalRepoUrl );
-        model.addRepository( localAsRemote );
-        model.addPluginRepository( localAsRemote );
-
         // Write the staged POM
         File pomParentDir = PomFile.getParentFile();
         if ( pomParentDir == null )
@@ -640,23 +638,43 @@ public abstract class AbstractEclipsePluginIT
             IOUtil.close( writer );
         }
 
-        // Run mvn install with the staged POM, pointing to the test local repository
+        // --- Step 2: build the plugin jar using the system local repository ---
+        // Do NOT override localRepositoryDirectory here; the system ~/.m2/repository already
+        // contains all dependencies from the main build, so this finishes in seconds.
         File buildLog = new File( "target/test-build-logs/setup.build.log" );
         buildLog.getParentFile().mkdirs();
 
-        Properties properties = new Properties();
-        List<String> goals = Collections.singletonList( "install" );
+        Properties buildProperties = new Properties();
+        buildProperties.setProperty( "maven.test.skip", "true" );
+        List<String> buildGoals = Collections.singletonList( "package" );
 
-        InvocationRequest request = buildTool.createBasicInvocationRequest( stagedPom, properties, goals, buildLog );
-        request.setLocalRepositoryDirectory( localRepositoryDirectory );
+        InvocationRequest buildRequest =
+            buildTool.createBasicInvocationRequest( stagedPom, buildProperties, buildGoals, buildLog );
+        buildRequest.setShowErrors( true );
 
-        InvocationResult result = buildTool.executeMaven( request );
-        if ( result.getExitCode() != 0 )
+        InvocationResult buildResult = buildTool.executeMaven( buildRequest );
+        if ( buildResult.getExitCode() != 0 )
         {
             throw new Exception(
-                "Plugin installation for testing failed with exit code " + result.getExitCode()
+                "Plugin build for testing failed with exit code " + buildResult.getExitCode()
                     + ". See build log: " + buildLog.getAbsolutePath() );
         }
+
+        // --- Step 3: copy the built artifact into the test local repository ---
+        // The IT sub-process builds point their local repo at localRepositoryDirectory.
+        // Placing the plugin jar and POM there is enough for Maven to find and execute it.
+        String artifactName = ARTIFACT_ID + "-" + VERSION;
+        File builtJar = new File( pomParentDir, buildDirectory + "/" + artifactName + ".jar" );
+
+        String groupPath = GROUP_ID.replace( '.', '/' );
+        File artifactDir = new File( localRepositoryDirectory,
+            groupPath + "/" + ARTIFACT_ID + "/" + VERSION );
+        artifactDir.mkdirs();
+
+        FileUtils.copyFile( builtJar, new File( artifactDir, artifactName + ".jar" ) );
+        FileUtils.copyFile( stagedPom, new File( artifactDir, artifactName + ".pom" ) );
+
+        System.out.println( "*** Copied plugin artifact to test local repository: " + artifactDir );
     }
 
     /**

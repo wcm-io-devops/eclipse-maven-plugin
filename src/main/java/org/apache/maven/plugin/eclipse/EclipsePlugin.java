@@ -2036,6 +2036,21 @@ public class EclipsePlugin
     }
 
     /**
+     * Finds the eclipse plugin configuration in a plugins map by checking both the fork coordinates
+     * ({@code io.wcm.devops.maven.plugins:eclipse-maven-plugin}) and the original Apache Maven
+     * coordinates ({@code org.apache.maven.plugins:maven-eclipse-plugin}).
+     */
+    private Plugin findEclipsePlugin( java.util.Map pluginsAsMap )
+    {
+        Plugin plugin = (Plugin) pluginsAsMap.get( "io.wcm.devops.maven.plugins:eclipse-maven-plugin" );
+        if ( plugin == null )
+        {
+            plugin = (Plugin) pluginsAsMap.get( "org.apache.maven.plugins:maven-eclipse-plugin" );
+        }
+        return plugin;
+    }
+
+    /**
      * @param mavenProject the project to get the projectNameTemplate configuration from
      * @return the projectNameTemplate configuration from the specified MavenProject
      */
@@ -2048,11 +2063,12 @@ public class EclipsePlugin
         Build build = mavenProject.getBuild();
         if ( build != null )
         {
-            String eclipsePlugin = "org.apache.maven.plugins:maven-eclipse-plugin";
-            Plugin plugin = (Plugin) build.getPluginsAsMap().get( eclipsePlugin );
+            // Try the fork coordinates first, then fall back to the original Apache Maven coordinates
+            // so that projects using either coordinate set are supported.
+            Plugin plugin = findEclipsePlugin( build.getPluginsAsMap() );
             if ( plugin == null && build.getPluginManagement() != null )
             {
-                plugin = (Plugin) build.getPluginManagement().getPluginsAsMap().get( eclipsePlugin );
+                plugin = findEclipsePlugin( build.getPluginManagement().getPluginsAsMap() );
             }
             if ( plugin != null )
             {

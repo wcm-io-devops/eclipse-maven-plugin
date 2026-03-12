@@ -27,8 +27,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.eclipse.Messages;
-import org.apache.maven.plugin.ide.IdeDependency;
+import org.apache.maven.plugin.eclipse.Messages;import org.apache.maven.plugin.ide.IdeDependency;
 import org.apache.maven.plugin.ide.IdeUtils;
 
 /**
@@ -81,7 +80,7 @@ public class EclipseAjdtWriter
     {
 
         // check if it's necessary to create project specific settings
-        Properties ajdtSettings = new Properties();
+        Properties ajdtSettings = new SortedProperties();
 
         IdeDependency[] deps = config.getDeps();
         int ajdtDepCount = 0;
@@ -118,10 +117,11 @@ public class EclipseAjdtWriter
                 {
                     oldAjdtSettingsFile = ajdtSettingsFile;
 
-                    Properties oldsettings = new Properties();
+                    Properties oldsettings = new SortedProperties();
                     oldsettings.load( new FileInputStream( oldAjdtSettingsFile ) );
 
-                    Properties newsettings = (Properties) oldsettings.clone();
+                    Properties newsettings = new SortedProperties();
+                    newsettings.putAll( oldsettings );
                     newsettings.putAll( ajdtSettings );
 
                     if ( !oldsettings.equals( newsettings ) )
