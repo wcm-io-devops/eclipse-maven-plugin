@@ -53,9 +53,6 @@ public class RadWebsiteConfigWriter
     /**
      * write the website-config file for RAD6 if needed.
      * 
-     * @param sourceDirs all eclipse source directorys
-     * @param localRepository the local reposetory
-     * @param buildOutputDirectory build output directory (target)
      * @throws MojoExecutionException when writing the config files was not possible
      */
     public void write()

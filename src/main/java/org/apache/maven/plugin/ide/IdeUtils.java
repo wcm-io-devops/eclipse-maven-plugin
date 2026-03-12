@@ -244,7 +244,7 @@ public class IdeUtils
      * </ul>
      * 
      * @param artifactIds artifact names to compare against for extracting version
-     * @param artifacts Set of artifacts for our project
+     * @param dependencies Set of artifacts for our project
      * @param len expected length of the version sub-string
      * @return
      */
