@@ -55,9 +55,6 @@ public class RadJ2EEWriter
     /**
      * write the .j2ee file to the project root directory.
      * 
-     * @param sourceDirs all eclipse source directorys
-     * @param localRepository the local reposetory
-     * @param buildOutputDirectory build output directory (target)
      * @throws MojoExecutionException when writing the config files was not possible
      */
     public void write()

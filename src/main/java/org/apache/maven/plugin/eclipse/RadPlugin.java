@@ -132,8 +132,8 @@ public class RadPlugin
      * write all rad6 configuration files. <br/>
      * <b> NOTE: This could change the config! </b>
      * 
-     * @see EclipsePlugin#writeConfiguration()
-     * @param deps resolved dependencies to handle
+     * @see EclipsePlugin#writeConfiguration(IdeDependency[])
+     * @param config the Eclipse writer configuration
      * @throws MojoExecutionException if the config files could not be written.
      */
     protected void writeConfigurationExtras( EclipseWriterConfig config )

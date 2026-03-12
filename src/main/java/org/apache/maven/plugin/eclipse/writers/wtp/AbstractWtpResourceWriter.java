@@ -171,9 +171,10 @@ public abstract class AbstractWtpResourceWriter
      * Adds dependency for Eclipse WTP project.
      * 
      * @param writer
-     * @param artifact
+     * @param dep
      * @param localRepository
      * @param basedir
+     * @param deployPath
      * @throws MojoExecutionException
      */
     protected void addDependency( XMLWriter writer, IdeDependency dep, ArtifactRepository localRepository,

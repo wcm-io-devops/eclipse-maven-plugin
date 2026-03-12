@@ -128,7 +128,7 @@ public class EclipseConfigFile
     /**
      * Setter for <code>url</code>.
      * 
-     * @param location The url to set.
+     * @param url The url to set.
      */
     public void setURL( URL url )
     {

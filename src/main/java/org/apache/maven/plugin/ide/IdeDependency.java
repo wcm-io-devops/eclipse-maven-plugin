@@ -256,9 +256,9 @@ public class IdeDependency
     }
 
     /**
-     * Setter for <code>groupId</code>.
+     * Setter for <code>classifier</code>.
      * 
-     * @param groupId The groupId to set.
+     * @param classifier The classifier to set.
      */
     public void setClassifier( String classifier )
     {
