@@ -6,7 +6,7 @@
     <property name="java-output-path" value="/target/classes"/>
     <wb-resource deploy-path="/WEB-INF/classes" source-path="src/main/java"/>
     <wb-resource deploy-path="/WEB-INF/classes" source-path="src/main/resources"/>
-    <wb-resource deploy-path="/WEB-INF/classes" source-path="/home/runner/work/eclipse-maven-plugin/eclipse-maven-plugin/target/test-classes/projects/project-65-MECLIPSE-642/shared-resources"/>
-    <wb-resource deploy-path="/WEB-INF/classes" source-path="/home/runner/work/eclipse-maven-plugin/eclipse-maven-plugin/target/test-classes/projects/project-65-MECLIPSE-642/s"/>
+    <wb-resource deploy-path="/WEB-INF/classes" source-path="${basedir}/target/test-classes/projects/project-65-MECLIPSE-642/shared-resources"/>
+    <wb-resource deploy-path="/WEB-INF/classes" source-path="${basedir}/target/test-classes/projects/project-65-MECLIPSE-642/s"/>
   </wb-module>
 </project-modules>

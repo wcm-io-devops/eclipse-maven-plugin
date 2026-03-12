@@ -3,7 +3,7 @@
   <wb-module deploy-name="my-ear">
     <wb-resource deploy-path="/" source-path="src/main/application"/>
     <dependent-module archiveName="my-ejb.jar" deploy-path="/" handle="module:/resource/my-ejb/my-ejb">
-      <dependent-object>EjbModule_2145416033</dependent-object>
+      <dependent-object>EjbModule_19673895</dependent-object>
       <dependency-type>uses</dependency-type>
     </dependent-module>
     <wb-resource deploy-path="/" source-path="src/main/java"/>
