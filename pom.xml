@@ -389,7 +389,7 @@ under the License.
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <id>require-maven-2.0.9</id>
+            <id>require-maven-3.0</id>
             <goals>
               <goal>enforce</goal>
             </goals>
@@ -397,8 +397,7 @@ under the License.
               <rules>
                 <requireMavenVersion>
                   <!-- The tests check file encoding and class path ordering which depends on fixes in latest Maven -->
-                  <version>[2.0.9,3.0-SNAPSHOT],[3.0,)</version>
-                  <!-- workaround for MENFORCER-94 -->
+                  <version>[3.0,)</version>
                 </requireMavenVersion>
               </rules>
             </configuration>
