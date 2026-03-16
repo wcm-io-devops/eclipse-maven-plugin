@@ -70,8 +70,8 @@ under the License.
 				<version>1.1</version>
 				<configuration>
 					<complianceLevel>1.6</complianceLevel>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>11</source>
+					<target>11</target>
 					<verbose>false</verbose>
 					<showWeaveInfo>true</showWeaveInfo>
 					<encoding>UTF-8</encoding>

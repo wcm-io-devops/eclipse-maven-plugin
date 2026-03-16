@@ -121,9 +121,6 @@ public class RadApplicationXMLWriter
     /**
      * write the application.xml and the .modulemaps file to the META-INF directory.
      * 
-     * @param sourceDirs all eclipse source directorys
-     * @param localRepository the local reposetory
-     * @param buildOutputDirectory build output directory (target)
      * @throws MojoExecutionException when writing the config files was not possible
      */
     public void write()

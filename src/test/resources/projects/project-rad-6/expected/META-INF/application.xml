@@ -19,7 +19,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<application xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Application_ID" version="1.4">
+<application xmlns="http://java.sun.com/xml/ns/j2ee" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Application_ID" version="1.4">
   <description/>
   <display-name>project-rad-6</display-name>
 </application>

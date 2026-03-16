@@ -189,7 +189,7 @@ public class EclipsePlugin
      * List of artifacts, represented as <code>groupId:artifactId</code>, to exclude from the eclipse classpath, being
      * provided by some eclipse classPathContainer.
      *
-     * @see http://jira.codehaus.org/browse/MECLIPSE-79
+     * @see <a href="http://jira.codehaus.org/browse/MECLIPSE-79">MECLIPSE-79</a>
      * @since 2.5
      */
     @Parameter
@@ -293,6 +293,7 @@ public class EclipsePlugin
      *
      * @deprecated use downloadSources
      */
+    @Deprecated
     @Parameter( property = "eclipse.downloadSources" )
     private boolean eclipseDownloadSources;
 
@@ -2048,7 +2049,7 @@ public class EclipsePlugin
         Build build = mavenProject.getBuild();
         if ( build != null )
         {
-            String eclipsePlugin = "org.apache.maven.plugins:maven-eclipse-plugin";
+            String eclipsePlugin = "io.wcm.devops.maven.plugins:eclipse-maven-plugin";
             Plugin plugin = (Plugin) build.getPluginsAsMap().get( eclipsePlugin );
             if ( plugin == null && build.getPluginManagement() != null )
             {

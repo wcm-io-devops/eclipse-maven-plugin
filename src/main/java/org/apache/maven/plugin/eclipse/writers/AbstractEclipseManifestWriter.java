@@ -258,9 +258,6 @@ public abstract class AbstractEclipseManifestWriter
      * Otherwise generate a <b>NEW</b> (i.e the old one is overwritten) which only contains values for MANIFEST_VERSION
      * and CLASS_PATH, all other previous entries are not kept.
      * 
-     * @param sourceDirs all eclipse source directorys
-     * @param localRepository the local reposetory
-     * @param buildOutputDirectory build output directory (target)
      * @throws MojoExecutionException when writing the config files was not possible
      */
     public void write()

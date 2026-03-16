@@ -1,6 +1,6 @@
 <img src="https://wcm.io/images/favicon-16@2x.png"/> Eclipse Maven Plugin
 ======
-[![Build](https://github.com/wcm-io-devops/eclipse-maven-plugin/workflows/Build/badge.svg?branch=develop)](https://github.com/wcm-io-devops/eclipse-maven-plugin/actions?query=workflow%3ABuild+branch%3Adevelop)
+[![Build](https://github.com/wcm-io-devops/eclipse-maven-plugin/actions/workflows/maven-build.yml/badge.svg?branch=develop)](https://github.com/wcm-io-devops/eclipse-maven-plugin/actions?query=workflow%3ABuild+branch%3Adevelop)
 [![Maven Central](https://img.shields.io/maven-central/v/io.wcm.devops.maven.plugins/eclipse-maven-plugin)](https://repo1.maven.org/maven2/io/wcm/devops/maven/plugins/eclipse-maven-plugin)
 
 The Eclipse Plugin is used to generate Eclipse IDE files (.project, .classpath and the .settings folder) from a POM.
@@ -14,7 +14,7 @@ So we maintain a fork of the original plugin here and publish it under Apache 2.
 Documentation:
 
 * [wcm.io DevOps Eclipse Maven Plugin Documentation](https://devops.wcm.io/maven/plugins/eclipse-maven-plugin/)
-* [Changes since the original Maven Eclipse Plugin 2.10.](https://devops.wcm.io/maven/plugins/eclipse-maven-plugin/changes-report.html)
+* [Changes since the original Maven Eclipse Plugin 2.10.](https://devops.wcm.io/maven/plugins/eclipse-maven-plugin/changes.html)
 
 To use this in your projects update all your POMs to use
 

@@ -36,7 +36,7 @@ ${project.name}
 
   So we maintain a fork of the original plugin here and publish it under Apache 2.0 license within the wcm.io DevOps project.
 
-  {{{./changes-report.html}Changes since the original Maven Eclipse Plugin 2.10.}}
+  {{{./changes.html}Changes since the original Maven Eclipse Plugin 2.10.}}
 
 
 * Plugin Overview

@@ -23,15 +23,15 @@ under the License.
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.wcm.devops</groupId>
-    <artifactId>io.wcm.devops.parent_toplevel</artifactId>
-    <version>1.3.2</version>
+    <groupId>io.wcm.maven</groupId>
+    <artifactId>io.wcm.maven.global-parent</artifactId>
+    <version>75</version>
     <relativePath />
   </parent>
 
   <groupId>io.wcm.devops.maven.plugins</groupId>
   <artifactId>eclipse-maven-plugin</artifactId>
-  <version>3.2.0</version>
+  <version>3.3.0</version>
   <packaging>maven-plugin</packaging>
 
   <name>wcm.io DevOps Eclipse Maven Plugin</name>
@@ -52,8 +52,8 @@ under the License.
   </scm>
 
   <issueManagement>
-    <system>JIRA</system>
-    <url>https://wcm-io.atlassian.net/projects/WDEVOP</url>
+    <system>GitHub</system>
+    <url>https://github.com/wcm-io-devops/eclipse-maven-plugin</url>
   </issueManagement>
 
   <ciManagement>
@@ -82,124 +82,138 @@ under the License.
   </developers>
 
   <properties>
-    <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
-
-    <mavenVersion>2.2.1</mavenVersion>
+    <mavenVersion>3.8.1</mavenVersion>
     <maven.test.jvmargs>-Xmx1024m</maven.test.jvmargs>
-    <surefire.version>2.18.1</surefire.version>
-    <mavenPluginToolsVersion>3.5.2</mavenPluginToolsVersion>
+    <surefire.version>3.5.5</surefire.version>
+    <mavenPluginToolsVersion>3.15.2</mavenPluginToolsVersion>
+
+    <!-- site settings -->
+    <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
+    <site.url>https://devops.wcm.io</site.url>
+    <site.deploy.id>ssh-wcm.io</site.deploy.id>
+    <site.deploy.url>scm:git:https://github.com/wcm-io-devops/wcm-io-devops.github.io.git</site.deploy.url>
 
     <!-- repository settings -->
-    <distribution.snapshotRepositoryId>ossrh</distribution.snapshotRepositoryId>
-    <distribution.snapshotRepositoryUrl>https://oss.sonatype.org/content/repositories/snapshots</distribution.snapshotRepositoryUrl>
-    <distribution.releaseRepositoryId>ossrh</distribution.releaseRepositoryId>
-    <distribution.releaseRepositoryUrl>https://oss.sonatype.org/service/local/staging/deploy/maven2/</distribution.releaseRepositoryUrl>
-
-    <!-- Skip integration tests by default -->
-    <skipITs>true</skipITs>
+    <distribution.snapshotRepositoryId>sonatype-central-snapshots</distribution.snapshotRepositoryId>
+    <distribution.snapshotRepositoryUrl>https://central.sonatype.com/repository/maven-snapshots</distribution.snapshotRepositoryUrl>
+    <distribution.releaseRepositoryId>sonatype-central</distribution.releaseRepositoryId>
+    <distribution.releaseRepositoryUrl>https://central.sonatype.com</distribution.releaseRepositoryUrl>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
+      <artifactId>maven-compat</artifactId>
       <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
       <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>3.6.0</version>
+      <version>${mavenPluginToolsVersion}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
       <version>${mavenVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-artifact-manager</artifactId>
-      <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-artifact</artifactId>
       <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
       <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-settings</artifactId>
       <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-provider-api</artifactId>
-      <version>2.1</version>
+      <version>3.5.3</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-filtering</artifactId>
-      <version>3.1.1</version>
+      <version>3.5.0</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-interpolation</artifactId>
-      <version>1.25</version>
+      <version>1.29</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.7</version>
+      <version>2.21.0</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-archiver</artifactId>
-      <version>3.7.0</version>
+      <version>4.11.0</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>3.0.20</version>
+      <version>4.0.2</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-interactivity-jline</artifactId>
-      <version>1.0-alpha-5</version>
+      <version>1.1</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-archiver</artifactId>
-      <version>2.5</version>
+      <version>3.6.6</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-resources</artifactId>
-      <version>1.0-alpha-7</version>
+      <version>1.3.1</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>biz.aQute</groupId>
       <artifactId>bndlib</artifactId>
-      <version>0.0.145</version>
+      <version>0.0.357</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-osgi</artifactId>
       <version>0.2.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.core</groupId>
       <artifactId>resources</artifactId>
       <version>3.3.0-v20070604</version>
+      <scope>compile</scope>
       <exclusions>
         <exclusion>
           <groupId>org.eclipse.ant</groupId>
@@ -221,9 +235,9 @@ under the License.
     </dependency>
     <!-- Tests -->
     <dependency>
-      <groupId>easymock</groupId>
+      <groupId>org.easymock</groupId>
       <artifactId>easymock</artifactId>
-      <version>1.2_Java1.3</version>
+      <version>5.6.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -235,7 +249,7 @@ under the License.
     <dependency>
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
-      <version>1.0-FCS</version>
+      <version>2.0.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -247,37 +261,43 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.plugin-testing</groupId>
       <artifactId>maven-test-tools</artifactId>
-      <version>1.2</version>
+      <version>3.3.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-testing</groupId>
       <artifactId>maven-plugin-testing-tools</artifactId>
-      <version>1.2</version>
+      <version>3.3.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-testing</groupId>
       <artifactId>maven-plugin-testing-harness</artifactId>
-      <version>1.2</version>
+      <version>3.5.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-invoker</artifactId>
-      <version>2.2</version>
+      <version>3.3.0</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
+      <version>3.4.2</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13.1</version>
+      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
-      <version>1.2</version>
+      <version>1.6</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -285,6 +305,7 @@ under the License.
   <build>
     <pluginManagement>
       <plugins>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
@@ -302,6 +323,7 @@ under the License.
             </execution>
           </executions>
         </plugin>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-report-plugin</artifactId>
@@ -313,6 +335,7 @@ under the License.
             </reportsDirectories>
           </configuration>
         </plugin>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
@@ -324,7 +347,14 @@ under the License.
               <version>${surefire.version}</version>
             </dependency>
           </dependencies>
+          <configuration>
+            <systemPropertyVariables>
+              <maven.home>${maven.home}</maven.home>
+            </systemPropertyVariables>
+            <argLine>${maven.test.jvmargs}</argLine>
+          </configuration>
         </plugin>
+
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
@@ -343,6 +373,7 @@ under the License.
             </excludes>
           </configuration>
         </plugin>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
@@ -350,6 +381,37 @@ under the License.
             <doclint>none</doclint>
           </configuration>
         </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <projectVersionPolicyId>OddEvenVersionPolicy</projectVersionPolicyId>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.release</groupId>
+              <artifactId>maven-release-oddeven-policy</artifactId>
+              <version>${maven-release-plugin.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+
+        <plugin>
+          <groupId>com.amashchenko.maven.plugin</groupId>
+          <artifactId>gitflow-maven-plugin</artifactId>
+          <configuration>
+            <projectVersionPolicyId>OddEvenVersionPolicy</projectVersionPolicyId>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.release</groupId>
+              <artifactId>maven-release-oddeven-policy</artifactId>
+              <version>${maven-release-plugin.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+
       </plugins>
     </pluginManagement>
     <plugins>
@@ -363,7 +425,7 @@ under the License.
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <id>require-maven-2.0.9</id>
+            <id>require-maven-3.0</id>
             <goals>
               <goal>enforce</goal>
             </goals>
@@ -371,8 +433,7 @@ under the License.
               <rules>
                 <requireMavenVersion>
                   <!-- The tests check file encoding and class path ordering which depends on fixes in latest Maven -->
-                  <version>[2.0.9,3.0-SNAPSHOT],[3.0,)</version>
-                  <!-- workaround for MENFORCER-94 -->
+                  <version>[3.0,)</version>
                 </requireMavenVersion>
               </rules>
             </configuration>
@@ -475,7 +536,7 @@ under the License.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
-            <version>1.7</version>
+            <version>3.2.0</version>
             <executions>
               <execution>
                 <id>copy-it-settings</id>
@@ -509,17 +570,17 @@ under the License.
               <dependency>
                 <groupId>org.apache.ant</groupId>
                 <artifactId>ant-nodeps</artifactId>
-                <version>1.7.1</version>
+                <version>1.8.1</version>
               </dependency>
               <dependency>
                 <groupId>org.apache.ant</groupId>
                 <artifactId>ant-apache-bsf</artifactId>
-                <version>1.7.1</version>
+                <version>1.10.15</version>
               </dependency>
               <dependency>
                 <groupId>org.beanshell</groupId>
                 <artifactId>bsh</artifactId>
-                <version>2.0b4</version>
+                <version>2.0b5</version>
               </dependency>
             </dependencies>
           </plugin>
@@ -532,12 +593,6 @@ under the License.
                   <goal>integration-test</goal>
                   <goal>verify</goal>
                 </goals>
-                <configuration>
-                <systemPropertyVariables>
-                   <maven.home>${maven.home}</maven.home>
-                 </systemPropertyVariables>
-                 <argLine>${maven.test.jvmargs}</argLine>
-                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -626,21 +681,54 @@ under the License.
         </pluginManagement>
       </build>
     </profile>
+    <!-- profile used for building releases and deployment to sonatype/maven central -->
+    <profile>
+      <id>release-profile</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <!-- sign the build -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <inherited>true</inherited>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- configure staging process at sonatype.-->
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <extensions>true</extensions>
+            <inherited>true</inherited>
+            <configuration>
+              <publishingServerId>sonatype-central</publishingServerId>
+              <deploymentName>${project.artifactId} ${project.version}</deploymentName>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
   <reporting>
     <plugins>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-        <configuration>
-          <requirements>
-            <maven>${mavenVersion}</maven>
-          </requirements>
-        </configuration>
+        <artifactId>maven-plugin-report-plugin</artifactId>
       </plugin>
-
     </plugins>
   </reporting>
 

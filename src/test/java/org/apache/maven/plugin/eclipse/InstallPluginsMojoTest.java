@@ -22,7 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Assert;
 import junit.framework.TestCase;
@@ -41,14 +43,12 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.shared.osgi.DefaultMaven2OsgiConverter;
 import org.apache.maven.shared.osgi.Maven2OsgiConverter;
-import org.apache.maven.shared.tools.easymock.MockManager;
 import org.apache.maven.shared.tools.easymock.TestFileManager;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.components.interactivity.InputHandler;
-import org.codehaus.plexus.logging.console.ConsoleLogger;
-import org.easymock.MockControl;
+import org.easymock.EasyMock;
 
 public class InstallPluginsMojoTest
     extends TestCase
@@ -59,7 +59,7 @@ public class InstallPluginsMojoTest
 
     private TestFileManager fileManager;
 
-    private MockManager mm = new MockManager();
+    private List<Object> mocks = new ArrayList<>();
 
     private File eclipseDir;
 
@@ -83,7 +83,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileExists( artifact );
         assertInstalledDirDoesNotExist( artifact );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     /**
@@ -102,7 +102,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileExists( artifact );
         assertInstalledDirDoesNotExist( artifact );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     /**
@@ -121,7 +121,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileExists( artifact );
         assertInstalledDirDoesNotExist( artifact );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     /**
@@ -140,7 +140,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileDoesNotExist( artifact );
         assertInstalledDirDoesNotExist( artifact );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     /**
@@ -159,7 +159,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileDoesNotExist( jira488_missingManifest );
         assertInstalledDirDoesNotExist( jira488_missingManifest );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     public void testShouldInstallAsJarWhenPropertyNotSpecified()
@@ -170,7 +170,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileExists( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
         assertInstalledDirDoesNotExist( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     public void testShouldInstallAsJarWhenPropertyIsTrue()
@@ -181,7 +181,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileExists( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
         assertInstalledDirDoesNotExist( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     public void testShouldInstallAsDirWhenPropertyIsFalse()
@@ -192,7 +192,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileDoesNotExist( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
         assertInstalledDirExists( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     public void testShouldInstallWhenTypeContainedInPluginTypesListWithMultipleValues()
@@ -203,7 +203,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileExists( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
         assertInstalledDirDoesNotExist( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     public void testShouldNotInstallWhenTypeNotContainedInPluginTypesList()
@@ -214,7 +214,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileDoesNotExist( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
         assertInstalledDirDoesNotExist( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     public void testShouldRemoveOldDirectoryBeforeInstallingNewJarWhenOverwriteIsFalse()
@@ -231,7 +231,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileDoesNotExist( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
         assertInstalledDirExists( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     public void testShouldRemoveOldDirectoryBeforeInstallingNewJarWhenOverwriteIsTrue()
@@ -248,7 +248,7 @@ public class InstallPluginsMojoTest
         assertInstalledFileExists( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
         assertInstalledDirDoesNotExist( ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME );
 
-        mm.verifyAll();
+        EasyMock.verify( mocks.toArray() );
     }
 
     private void assertInstalledFileDoesNotExist( Artifact artifact )
@@ -282,6 +282,7 @@ public class InstallPluginsMojoTest
     public void setUp()
     {
         fileManager = new TestFileManager( "InstallPluginsMojo.test.", "" );
+        mocks = new ArrayList<>();
 
         ARTIFACT_ORG_ECLIPSE_CORE_RUNTIME = createArtifact( "org.eclipse.core", "runtime", "3.2.0-v20060603" );
     }
@@ -318,13 +319,13 @@ public class InstallPluginsMojoTest
         String type = artifact.getType();
 
         ArtifactRepository localRepo = createLocalRepository();
-        MavenProjectBuilder projectBuilder = createProjectBuilder(typeList.contains(type), installAsJar );
-        ArchiverManager archiverManager = createArchiverManager(typeList.contains(type), installAsJar );
+        MavenProjectBuilder projectBuilder = createProjectBuilder( typeList.contains( type ), installAsJar );
+        ArchiverManager archiverManager = createArchiverManager( typeList.contains( type ), installAsJar );
         InputHandler inputHandler = createInputHandler();
 
         Log log = new SystemStreamLog();
 
-        mm.replayAll();
+        EasyMock.replay( mocks.toArray() );
 
         InstallPluginsMojo mojo =
             new InstallPluginsMojo( eclipseDir, overwrite, Collections.singletonList( artifact ), typeList, localRepo,
@@ -362,33 +363,23 @@ public class InstallPluginsMojoTest
 
     private InputHandler createInputHandler()
     {
-        MockControl control = MockControl.createControl( InputHandler.class );
-
-        mm.add( control );
-
-        InputHandler handler = (InputHandler) control.getMock();
-
+        InputHandler handler = EasyMock.createNiceMock( InputHandler.class );
+        mocks.add( handler );
         return handler;
     }
 
     private ArchiverManager createArchiverManager( boolean isReachable, Boolean installAsJar )
     {
-        MockControl control = MockControl.createControl( ArchiverManager.class );
-
-        mm.add( control );
-
-        ArchiverManager manager = (ArchiverManager) control.getMock();
+        ArchiverManager manager = EasyMock.createMock( ArchiverManager.class );
+        mocks.add( manager );
 
         if ( isReachable && installAsJar == Boolean.FALSE )
         {
             try
             {
-                manager.getUnArchiver( (File) null );
-                control.setMatcher( MockControl.ALWAYS_MATCHER );
                 ZipUnArchiver zipUnArchiver = new ZipUnArchiver();
-                zipUnArchiver.enableLogging( new ConsoleLogger( org.codehaus.plexus.logging.Logger.LEVEL_INFO,
-                                                                "console" ) );
-                control.setReturnValue( zipUnArchiver, MockControl.ONE_OR_MORE );
+                EasyMock.expect( manager.getUnArchiver( EasyMock.<File>anyObject() ) )
+                    .andReturn( zipUnArchiver ).atLeastOnce();
             }
             catch ( NoSuchArchiverException e )
             {
@@ -401,11 +392,8 @@ public class InstallPluginsMojoTest
 
     private MavenProjectBuilder createProjectBuilder( boolean expectBuildFromRepository, Boolean installAsJar )
     {
-        MockControl control = MockControl.createControl( MavenProjectBuilder.class );
-
-        mm.add( control );
-
-        MavenProjectBuilder projectBuilder = (MavenProjectBuilder) control.getMock();
+        MavenProjectBuilder projectBuilder = EasyMock.createMock( MavenProjectBuilder.class );
+        mocks.add( projectBuilder );
 
         if ( expectBuildFromRepository )
         {
@@ -415,14 +403,17 @@ public class InstallPluginsMojoTest
 
                 if ( installAsJar != null )
                 {
-                    model.addProperty( InstallPluginsMojo.PROP_UNPACK_PLUGIN, "" + ( !installAsJar) );
+                    model.addProperty( InstallPluginsMojo.PROP_UNPACK_PLUGIN, "" + ( !installAsJar ) );
                 }
 
                 MavenProject project = new MavenProject( model );
 
-                projectBuilder.buildFromRepository( null, null, null, true );
-                control.setMatcher( MockControl.ALWAYS_MATCHER );
-                control.setReturnValue( project, MockControl.ONE_OR_MORE );
+                EasyMock.expect( projectBuilder.buildFromRepository(
+                    EasyMock.<Artifact>anyObject(),
+                    EasyMock.anyObject(),
+                    EasyMock.<ArtifactRepository>anyObject(),
+                    EasyMock.anyBoolean() ) )
+                    .andReturn( project ).atLeastOnce();
             }
             catch ( ProjectBuildingException e )
             {
@@ -435,12 +426,8 @@ public class InstallPluginsMojoTest
 
     private ArtifactRepository createLocalRepository()
     {
-        MockControl control = MockControl.createControl( ArtifactRepository.class );
-
-        mm.add( control );
-
-        ArtifactRepository repo = (ArtifactRepository) control.getMock();
-
+        ArtifactRepository repo = EasyMock.createNiceMock( ArtifactRepository.class );
+        mocks.add( repo );
         return repo;
     }
 

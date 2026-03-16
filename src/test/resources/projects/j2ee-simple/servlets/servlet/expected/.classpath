@@ -4,5 +4,9 @@
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
   <classpathentry kind="src" path="/primary-source-1.0-SNAPSHOT"/>
   <classpathentry kind="src" path="/logging-1.0-SNAPSHOT"/>
-  <classpathentry kind="var" path="M2_REPO/junit/junit/3.8.1/junit-3.8.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/junit/junit/3.8.1/junit-3.8.1.jar">
+    <attributes>
+      <attribute value="true" name="test"/>
+    </attributes>
+  </classpathentry>
 </classpath>
