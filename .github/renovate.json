@@ -12,5 +12,13 @@
       "matchFileNames": ["src/it/**"],
       "enabled": false
     }
+  ],
+  "ignoreDeps": [
+    "org.apache.maven:maven-compat",
+    "org.apache.maven:maven-plugin-api",
+    "org.apache.maven:maven-model",
+    "org.apache.maven:maven-artifact",
+    "org.apache.maven:maven-core",
+    "org.apache.maven:maven-settings"
   ]
 }
