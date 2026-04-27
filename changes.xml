@@ -24,6 +24,12 @@
     xsi:schemaLocation="http://maven.apache.org/changes/2.0.0 https://maven.apache.org/xsd/changes-2.0.0.xsd">
   <body>
 
+    <release version="3.3.2" date="not released">
+      <action type="update" dev="sseifert">
+        Switch to Java 21.
+      </action>
+    </release>
+
     <release version="3.3.0" date="2026-03-16">
       <action type="update" dev="sseifert" issue="107">
         Raise minimum maven version to 3.8.1, minimum java build version to Java 17.
