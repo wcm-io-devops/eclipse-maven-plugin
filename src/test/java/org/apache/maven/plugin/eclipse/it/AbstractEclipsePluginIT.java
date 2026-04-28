@@ -485,6 +485,12 @@ public abstract class AbstractEclipsePluginIT
 
         request.setDebug( true );
 
+        File mavenSettingsFile = new File( getBasedir(), ".maven-settings.xml" );
+        if ( mavenSettingsFile.exists() )
+        {
+            request.setUserSettingsFile( mavenSettingsFile );
+        }
+
         if ( switchLocalRepo )
         {
             request.setLocalRepositoryDirectory( localRepositoryDirectory );
