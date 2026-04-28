@@ -671,8 +671,25 @@ public abstract class AbstractEclipsePluginIT
             groupPath + "/" + ARTIFACT_ID + "/" + VERSION );
         artifactDir.mkdirs();
 
+        // Deploy a POM without parent to the test local repository.
+        // The IT forked builds use a minimal local repo with no access to snapshot repositories,
+        // so any SNAPSHOT parent reference would fail to resolve. All dependencies in this POM
+        // have explicit version numbers, so removing the parent is safe for plugin resolution.
+        model.setParent( null );
+        File deployPom = new File( pomParentDir, "pom-" + VERSION + "-deploy.xml" );
+        deployPom.deleteOnExit();
+        Writer deployWriter = WriterFactory.newXmlWriter( deployPom );
+        try
+        {
+            new MavenXpp3Writer().write( deployWriter, model );
+        }
+        finally
+        {
+            IOUtil.close( deployWriter );
+        }
+
         FileUtils.copyFile( builtJar, new File( artifactDir, artifactName + ".jar" ) );
-        FileUtils.copyFile( stagedPom, new File( artifactDir, artifactName + ".pom" ) );
+        FileUtils.copyFile( deployPom, new File( artifactDir, artifactName + ".pom" ) );
 
         System.out.println( "*** Copied plugin artifact to test local repository: " + artifactDir );
     }
