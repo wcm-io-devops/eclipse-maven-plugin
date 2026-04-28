@@ -18,6 +18,13 @@ jobs:
         java: [21, 25]
         os: [ubuntu-latest]
         distribution: [temurin]
+        include:
+          - java: 21
+            os: windows-latest
+            distribution: temurin
+          - java: 21
+            os: macos-latest
+            distribution: temurin
 
     steps:
       - name: Maven Build
