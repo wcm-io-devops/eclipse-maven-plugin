@@ -728,6 +728,7 @@ under the License.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-report-plugin</artifactId>
+        <version>${mavenPluginToolsVersion}</version>
       </plugin>
     </plugins>
   </reporting>
