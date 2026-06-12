@@ -39,8 +39,10 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.shared.osgi.DefaultMaven2OsgiConverter;
 import org.apache.maven.shared.osgi.Maven2OsgiConverter;
 import org.apache.maven.shared.tools.easymock.TestFileManager;
@@ -319,7 +321,7 @@ public class InstallPluginsMojoTest
         String type = artifact.getType();
 
         ArtifactRepository localRepo = createLocalRepository();
-        MavenProjectBuilder projectBuilder = createProjectBuilder( typeList.contains( type ), installAsJar );
+        ProjectBuilder projectBuilder = createProjectBuilder( typeList.contains( type ), installAsJar );
         ArchiverManager archiverManager = createArchiverManager( typeList.contains( type ), installAsJar );
         InputHandler inputHandler = createInputHandler();
 
@@ -390,9 +392,9 @@ public class InstallPluginsMojoTest
         return manager;
     }
 
-    private MavenProjectBuilder createProjectBuilder( boolean expectBuildFromRepository, Boolean installAsJar )
+    private ProjectBuilder createProjectBuilder( boolean expectBuildFromRepository, Boolean installAsJar )
     {
-        MavenProjectBuilder projectBuilder = EasyMock.createMock( MavenProjectBuilder.class );
+        ProjectBuilder projectBuilder = EasyMock.createMock( ProjectBuilder.class );
         mocks.add( projectBuilder );
 
         if ( expectBuildFromRepository )
@@ -408,12 +410,15 @@ public class InstallPluginsMojoTest
 
                 MavenProject project = new MavenProject( model );
 
-                EasyMock.expect( projectBuilder.buildFromRepository(
+                ProjectBuildingResult result = EasyMock.createMock( ProjectBuildingResult.class );
+                mocks.add( result );
+                EasyMock.expect( result.getProject() ).andReturn( project ).atLeastOnce();
+
+                EasyMock.expect( projectBuilder.build(
                     EasyMock.<Artifact>anyObject(),
-                    EasyMock.anyObject(),
-                    EasyMock.<ArtifactRepository>anyObject(),
-                    EasyMock.anyBoolean() ) )
-                    .andReturn( project ).atLeastOnce();
+                    EasyMock.anyBoolean(),
+                    EasyMock.<ProjectBuildingRequest>anyObject() ) )
+                    .andReturn( result ).atLeastOnce();
             }
             catch ( ProjectBuildingException e )
             {

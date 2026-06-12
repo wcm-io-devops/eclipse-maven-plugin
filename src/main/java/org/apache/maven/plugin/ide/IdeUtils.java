@@ -27,9 +27,7 @@ import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
@@ -39,6 +37,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.eclipse.Messages;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -462,27 +461,30 @@ public class IdeUtils
     }
 
     /**
-     * Wrapper around {@link ArtifactResolver#resolve(Artifact, List, ArtifactRepository)}
+     * Resolves the specified artifact using the {@link RepositorySystem}, tolerating a missing artifact.
      *
-     * @param artifactResolver see {@link ArtifactResolver#resolve(Artifact, List, ArtifactRepository)}
-     * @param artifact see {@link ArtifactResolver#resolve(Artifact, List, ArtifactRepository)}
-     * @param remoteRepos see {@link ArtifactResolver#resolve(Artifact, List, ArtifactRepository)}
-     * @param localRepository see {@link ArtifactResolver#resolve(Artifact, List, ArtifactRepository)}
+     * @param repositorySystem the repository system used to resolve the artifact
+     * @param artifact the artifact to resolve
+     * @param remoteRepos the remote repositories to search
+     * @param localRepository the local repository
      * @param log Logger
      * @return the artifact, resolved if possible.
      */
-    public static Artifact resolveArtifact( ArtifactResolver artifactResolver, Artifact artifact, List remoteRepos,
+    public static Artifact resolveArtifact( RepositorySystem repositorySystem, Artifact artifact, List remoteRepos,
                                             ArtifactRepository localRepository, Log log )
 
     {
-        try
-        {
-            artifactResolver.resolve( artifact, remoteRepos, localRepository );
-        }
-        catch ( ArtifactNotFoundException e )
-        {
-            // ignore, the jar has not been found
+        ArtifactResolutionRequest request = new ArtifactResolutionRequest();
+        request.setArtifact( artifact );
+        request.setResolveRoot( true );
+        request.setResolveTransitively( false );
+        request.setLocalRepository( localRepository );
+        request.setRemoteRepositories( remoteRepos );
 
+        repositorySystem.resolve( request );
+
+        if ( !artifact.isResolved() )
+        {
             /*
              * This method gets called with no remote repositories to avoid remote trips (which would ideally be
              * realized by means of a per-request offline flag), the set of available remote repos can however affect
@@ -493,14 +495,6 @@ public class IdeUtils
             {
                 artifact.setResolved( true );
             }
-        }
-        catch ( ArtifactResolutionException e )
-        {
-            String message =
-                Messages.getString( "IdeUtils.errorresolving",
-                                    new Object[] { artifact.getClassifier(), artifact.getId(), e.getMessage() } );
-
-            log.warn( message );
         }
 
         return artifact;

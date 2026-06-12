@@ -31,6 +31,7 @@ import java.util.jar.Manifest;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -39,9 +40,11 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.osgi.Maven2OsgiConverter;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
@@ -103,7 +106,13 @@ public class InstallPluginsMojo
      * that plugin should be installed as a jar, or expanded into a directory.
      */
     @Component
-    private MavenProjectBuilder projectBuilder;
+    private ProjectBuilder projectBuilder;
+
+    /**
+     * The current Maven session, used to obtain a base project building request.
+     */
+    @Parameter( defaultValue = "${session}", readonly = true )
+    private MavenSession session;
 
     /**
      * Used to configure and retrieve an appropriate tool for extracting each resolved plugin dependency. It is
@@ -133,7 +142,7 @@ public class InstallPluginsMojo
     // used primarily for testing.
     protected InstallPluginsMojo( File eclipseDir, boolean overwrite, List dependencyArtifacts,
                                   String pluginDependencyTypes, ArtifactRepository localRepository,
-                                  MavenProjectBuilder projectBuilder, ArchiverManager archiverManager,
+                                  ProjectBuilder projectBuilder, ArchiverManager archiverManager,
                                   InputHandler inputHandler, Log log )
     {
         this.eclipseDir = eclipseDir;
@@ -193,8 +202,21 @@ public class InstallPluginsMojo
 
                 try
                 {
-                    project =
-                        projectBuilder.buildFromRepository( artifact, Collections.EMPTY_LIST, localRepository, true );
+                    ProjectBuildingRequest request;
+                    if ( session != null )
+                    {
+                        request = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
+                    }
+                    else
+                    {
+                        request = new DefaultProjectBuildingRequest();
+                        request.setLocalRepository( localRepository );
+                    }
+                    request.setRemoteRepositories( Collections.<org.apache.maven.artifact.repository.ArtifactRepository>emptyList() );
+                    request.setProcessPlugins( false );
+                    request.setResolveDependencies( false );
+
+                    project = projectBuilder.build( artifact, true, request ).getProject();
                 }
                 catch ( ProjectBuildingException e )
                 {

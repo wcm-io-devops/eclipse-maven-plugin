@@ -27,9 +27,7 @@ import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -37,6 +35,7 @@ import org.apache.maven.plugin.eclipse.reader.ReadWorkspaceLocations;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
@@ -67,8 +66,8 @@ public class WorkspaceDependencyResolveMojo
     @Component( role = ArtifactFactory.class )
     private ArtifactFactory artifactFactory;
 
-    @Component( role = ArtifactResolver.class )
-    private ArtifactResolver artifactResolver;
+    @Component
+    private RepositorySystem repositorySystem;
 
     @Parameter( property = "project.remoteArtifactRepositories", required = true, readonly = true )
     private List<ArtifactRepository> remoteArtifactRepositories;
@@ -149,21 +148,22 @@ public class WorkspaceDependencyResolveMojo
     }
 
     private void resolveIfNecessary( String path )
-        throws ArtifactResolutionException
     {
         if ( null != path && path.startsWith( "M2_REPO" ) )
         {
-            try
+            Artifact artifact = createArtifactFromPath( path );
+            if ( artifact != null )
             {
-                Artifact artifact = createArtifactFromPath( path );
-                if ( artifact != null )
+                ArtifactResolutionRequest request = new ArtifactResolutionRequest();
+                request.setArtifact( artifact );
+                request.setResolveTransitively( false );
+                request.setLocalRepository( localRepository );
+                request.setRemoteRepositories( remoteArtifactRepositories );
+                repositorySystem.resolve( request );
+                if ( !artifact.isResolved() )
                 {
-                    artifactResolver.resolve( artifact, remoteArtifactRepositories, localRepository );
+                    getLog().info( "Unable to resolve artifact: " + artifact.getId() );
                 }
-            }
-            catch ( ArtifactNotFoundException e )
-            {
-                getLog().info( e );
             }
         }
     }
