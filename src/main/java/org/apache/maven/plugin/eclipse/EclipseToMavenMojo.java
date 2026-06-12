@@ -21,16 +21,6 @@ package org.apache.maven.plugin.eclipse;
 
 import aQute.lib.osgi.Analyzer;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.deployer.ArtifactDeployer;
-import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.installer.ArtifactInstallationException;
-import org.apache.maven.artifact.installer.ArtifactInstaller;
-import org.apache.maven.artifact.metadata.ArtifactMetadata;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
-import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -48,17 +38,18 @@ import org.apache.maven.plugin.eclipse.osgiplugin.PackagedPlugin;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.apache.maven.shared.utils.WriterFactory;
-import org.codehaus.plexus.PlexusConstants;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.components.interactivity.InputHandler;
-import org.codehaus.plexus.context.Context;
-import org.codehaus.plexus.context.ContextException;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.deployment.DeployRequest;
+import org.eclipse.aether.deployment.DeploymentException;
+import org.eclipse.aether.installation.InstallRequest;
+import org.eclipse.aether.installation.InstallationException;
+import org.eclipse.aether.repository.RemoteRepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -102,7 +93,6 @@ import java.util.regex.Pattern;
 @Mojo( name = "to-maven", requiresProject = false )
 public class EclipseToMavenMojo
     extends AbstractMojo
-    implements Contextualizable
 {
 
     /**
@@ -126,39 +116,16 @@ public class EclipseToMavenMojo
     private static final String ANY_VERSION = "[0,)";
 
     /**
-     * Plexus container, needed to manually lookup components for deploy of artifacts.
-     */
-    private PlexusContainer container;
-
-    /**
-     * Local maven repository.
-     */
-    @Parameter( property = "localRepository", required = true, readonly = true )
-    private ArtifactRepository localRepository;
-
-    /**
-     * ArtifactRepositoryFactory component.
+     * The repository system used to install/deploy artifacts.
      */
     @Component
-    private ArtifactRepositoryFactory artifactRepositoryFactory;
+    private RepositorySystem repositorySystem;
 
     /**
-     * ArtifactFactory component.
+     * The current repository/network configuration of Maven.
      */
-    @Component
-    private ArtifactFactory artifactFactory;
-
-    /**
-     * ArtifactInstaller component.
-     */
-    @Component
-    protected ArtifactInstaller installer;
-
-    /**
-     * ArtifactDeployer component.
-     */
-    @Component
-    private ArtifactDeployer deployer;
+    @Parameter( defaultValue = "${repositorySystemSession}", readonly = true, required = true )
+    private RepositorySystemSession repoSession;
 
     /**
      * Eclipse installation dir. If not set, a value for this parameter will be asked on the command line.
@@ -259,7 +226,7 @@ public class EclipseToMavenMojo
 
         File[] files = pluginDir.listFiles();
 
-        ArtifactRepository remoteRepo = resolveRemoteRepo();
+        RemoteRepository remoteRepo = resolveRemoteRepo();
 
         if ( remoteRepo != null )
         {
@@ -615,22 +582,11 @@ public class EclipseToMavenMojo
      * @param remoteRepo remote repository (if set)
      * @throws MojoExecutionException
      */
-    private void writeArtifact( Model model, Map<String, EclipseOsgiPlugin> plugins, ArtifactRepository remoteRepo )
+    private void writeArtifact( Model model, Map<String, EclipseOsgiPlugin> plugins, RemoteRepository remoteRepo )
         throws MojoExecutionException
     {
         Writer fw = null;
-        ArtifactMetadata metadata;
         File pomFile = null;
-        Artifact pomArtifact =
-            artifactFactory.createArtifact( model.getGroupId(), model.getArtifactId(), model.getVersion(), null, 
-                                            "pom" );
-        Artifact artifact =
-            artifactFactory.createArtifact( model.getGroupId(), model.getArtifactId(), model.getVersion(), null,
-                                            Constants.PROJECT_PACKAGING_JAR );
-        Artifact sourcesArtifact = !attachSourcePlugins
-            ? null
-            :  artifactFactory.createArtifactWithClassifier( model.getGroupId(), model.getArtifactId(),
-                model.getVersion(), Constants.PROJECT_PACKAGING_JAR, "sources" );
         try
         {
             pomFile = File.createTempFile( "pom-", ".xml" ); 
@@ -639,8 +595,6 @@ public class EclipseToMavenMojo
             model.setModelEncoding( "UTF-8" ); // to be removed when encoding is detected instead of forced to UTF-8 
             pomFile.deleteOnExit();
             new MavenXpp3Writer().write( fw, model );
-            metadata = new ProjectArtifactMetadata( pomArtifact, pomFile );
-            pomArtifact.addMetadata( metadata );
         }
         catch ( IOException e )
         {
@@ -662,31 +616,47 @@ public class EclipseToMavenMojo
             jarFile = plugin.getJarFile();
             jarFileSource = sourcePlugin != null ? sourcePlugin.getJarFile() : null;
 
+            org.eclipse.aether.artifact.Artifact pomArtifact =
+                new DefaultArtifact( model.getGroupId(), model.getArtifactId(), null, "pom", model.getVersion() )
+                    .setFile( pomFile );
+            org.eclipse.aether.artifact.Artifact artifact =
+                new DefaultArtifact( model.getGroupId(), model.getArtifactId(), null,
+                                     Constants.PROJECT_PACKAGING_JAR, model.getVersion() ).setFile( jarFile );
+            org.eclipse.aether.artifact.Artifact sourcesArtifact = sourcePlugin == null
+                ? null
+                : new DefaultArtifact( model.getGroupId(), model.getArtifactId(), "sources",
+                                       Constants.PROJECT_PACKAGING_JAR, model.getVersion() ).setFile( jarFileSource );
+
             if ( remoteRepo != null )
             {
-                deployer.deploy( pomFile, pomArtifact, remoteRepo, localRepository );
-                deployer.deploy( jarFile, artifact, remoteRepo, localRepository );
-                if ( sourcePlugin != null )
+                DeployRequest deployRequest = new DeployRequest();
+                deployRequest.setRepository( remoteRepo );
+                deployRequest.addArtifact( pomArtifact );
+                deployRequest.addArtifact( artifact );
+                if ( sourcesArtifact != null )
                 {
-                    deployer.deploy( jarFileSource, sourcesArtifact, remoteRepo, localRepository );
+                    deployRequest.addArtifact( sourcesArtifact );
                 }
+                repositorySystem.deploy( repoSession, deployRequest );
             }
             else
             {
-                installer.install( pomFile, pomArtifact, localRepository );
-                installer.install( jarFile, artifact, localRepository );
-                if ( sourcePlugin != null )
+                InstallRequest installRequest = new InstallRequest();
+                installRequest.addArtifact( pomArtifact );
+                installRequest.addArtifact( artifact );
+                if ( sourcesArtifact != null )
                 {
-                    installer.install( jarFileSource, sourcesArtifact, localRepository );
+                    installRequest.addArtifact( sourcesArtifact );
                 }
+                repositorySystem.install( repoSession, installRequest );
             }
         }
-        catch ( ArtifactDeploymentException e )
+        catch ( DeploymentException e )
         {
             throw new MojoExecutionException( 
                                   Messages.getString( "EclipseToMavenMojo.errordeployartifacttorepository" ), e );
         }
-        catch ( ArtifactInstallationException e )
+        catch ( InstallationException e )
         {
             throw new MojoExecutionException( 
                                   Messages.getString( "EclipseToMavenMojo.errorinstallartifacttorepository" ), e );
@@ -741,13 +711,13 @@ public class EclipseToMavenMojo
     }
 
     /**
-     * Resolves the deploy<code>deployTo</code> parameter to an <code>ArtifactRepository</code> instance (if set).
+     * Resolves the deploy<code>deployTo</code> parameter to a {@link RemoteRepository} instance (if set).
      *
-     * @return ArtifactRepository instance of null if <code>deployTo</code> is not set.
+     * @return RemoteRepository instance or null if <code>deployTo</code> is not set.
      * @throws MojoFailureException
      * @throws MojoExecutionException
      */
-    private ArtifactRepository resolveRemoteRepo()
+    private RemoteRepository resolveRemoteRepo()
         throws MojoFailureException, MojoExecutionException
     {
         if ( deployTo != null )
@@ -763,34 +733,16 @@ public class EclipseToMavenMojo
             else
             {
                 String id = matcher.group( 1 ).trim();
-                String layout = matcher.group( 2 ).trim();
                 String url = matcher.group( 3 ).trim();
 
-                ArtifactRepositoryLayout repoLayout;
-                try
-                {
-                    repoLayout = (ArtifactRepositoryLayout) container.lookup( ArtifactRepositoryLayout.ROLE, layout );
-                }
-                catch ( ComponentLookupException e )
-                {
-                    throw new MojoExecutionException(
-                                              Messages.getString( "EclipseToMavenMojo.cannotfindrepositorylayout",
-                                                                          layout ), e ); 
-                }
+                RemoteRepository repository =
+                    new RemoteRepository.Builder( id, "default", url ).build();
 
-                return artifactRepositoryFactory.createDeploymentArtifactRepository( id, url, repoLayout, true );
+                // apply authentication, proxy and mirror settings from the active session
+                return repositorySystem.newDeploymentRepository( repoSession, repository );
             }
         }
         return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void contextualize( Context context )
-        throws ContextException
-    {
-        this.container = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
     }
 
     /**
