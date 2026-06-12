@@ -28,6 +28,9 @@
       <action type="update" dev="sseifert">
         Switch to Java 21.
       </action>
+      <action type="update" dev="sseifert" issue="150">
+        Eliminate usage of maven-compat.
+      </action>
     </release>
 
     <release version="3.3.0" date="2026-03-16">
