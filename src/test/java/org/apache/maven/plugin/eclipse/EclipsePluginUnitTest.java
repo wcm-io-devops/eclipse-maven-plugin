@@ -28,13 +28,12 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.execution.RuntimeInformation;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.ide.AbstractIdeSupportMojo;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.rtinfo.RuntimeInformation;
 import org.apache.maven.shared.tools.easymock.TestFileManager;
 
 public class EclipsePluginUnitTest
@@ -55,9 +54,14 @@ public class EclipsePluginUnitTest
         EclipsePlugin mojo = new EclipsePlugin();
         RuntimeInformation rti = new RuntimeInformation()
         {
-            public org.apache.maven.artifact.versioning.ArtifactVersion getApplicationVersion()
+            public String getMavenVersion()
             {
-                return new DefaultArtifactVersion( "3.3.9" );
+                return "3.3.9";
+            }
+
+            public boolean isMavenVersion( String versionRange )
+            {
+                return true;
             }
         };
         Field field = AbstractIdeSupportMojo.class.getDeclaredField( "runtimeInformation" );

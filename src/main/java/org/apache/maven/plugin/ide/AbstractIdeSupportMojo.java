@@ -38,20 +38,14 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactCollector;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.resolver.DebugResolutionListener;
 import org.apache.maven.artifact.resolver.ResolutionNode;
-import org.apache.maven.artifact.resolver.WarningResolutionListener;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.execution.RuntimeInformation;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
@@ -63,6 +57,8 @@ import org.apache.maven.plugin.eclipse.Messages;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.rtinfo.RuntimeInformation;
 import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.logging.Logger;
 
@@ -113,16 +109,11 @@ public abstract class AbstractIdeSupportMojo
     protected ArtifactFactory artifactFactory;
 
     /**
-     * Artifact resolver, needed to download source jars for inclusion in classpath.
+     * Repository system, needed to resolve and download artifacts (replaces the legacy artifact
+     * resolver/collector from maven-compat).
      */
-    @Component( role = ArtifactResolver.class )
-    protected ArtifactResolver artifactResolver;
-
-    /**
-     * Artifact collector, needed to resolve dependencies.
-     */
-    @Component( role = ArtifactCollector.class )
-    protected ArtifactCollector artifactCollector;
+    @Component
+    protected RepositorySystem repositorySystem;
 
     @Component( role = ArtifactMetadataSource.class, hint = "maven" )
     protected ArtifactMetadataSource artifactMetadataSource;
@@ -292,23 +283,23 @@ public abstract class AbstractIdeSupportMojo
     }
 
     /**
-     * Getter for <code>artifactResolver</code>.
+     * Getter for <code>repositorySystem</code>.
      * 
-     * @return Returns the artifactResolver.
+     * @return Returns the repositorySystem.
      */
-    public ArtifactResolver getArtifactResolver()
+    public RepositorySystem getRepositorySystem()
     {
-        return artifactResolver;
+        return repositorySystem;
     }
 
     /**
-     * Setter for <code>artifactResolver</code>.
+     * Setter for <code>repositorySystem</code>.
      * 
-     * @param artifactResolver The artifactResolver to set.
+     * @param repositorySystem The repositorySystem to set.
      */
-    public void setArtifactResolver( ArtifactResolver artifactResolver )
+    public void setRepositorySystem( RepositorySystem repositorySystem )
     {
-        this.artifactResolver = artifactResolver;
+        this.repositorySystem = repositorySystem;
     }
 
     /**
@@ -518,20 +509,16 @@ public abstract class AbstractIdeSupportMojo
 
                     try
                     {
+                        ArtifactResolutionRequest request = new ArtifactResolutionRequest();
+                        request.setArtifact( project.getArtifact() );
+                        request.setResolveRoot( false );
+                        request.setArtifactDependencies( getProjectArtifacts() );
+                        request.setManagedVersionMap( managedVersions );
+                        request.setLocalRepository( localRepo );
+                        request.setRemoteRepositories( project.getRemoteArtifactRepositories() );
+                        request.setResolveTransitively( true );
 
-                        List listeners = new ArrayList();
-
-                        if ( logger.isDebugEnabled() )
-                        {
-                            listeners.add( new DebugResolutionListener( logger ) );
-                        }
-
-                        listeners.add( new WarningResolutionListener( logger ) );
-
-                        artifactResolutionResult =
-                            artifactCollector.collect( getProjectArtifacts(), project.getArtifact(), managedVersions,
-                                                       localRepo, project.getRemoteArtifactRepositories(),
-                                                       getArtifactMetadataSource(), null, listeners );
+                        artifactResolutionResult = repositorySystem.resolve( request );
                     }
                     catch ( RuntimeException e )
                     {
@@ -554,27 +541,13 @@ public abstract class AbstractIdeSupportMojo
                         ResolutionNode node = (ResolutionNode) o;
                         int dependencyDepth = node.getDepth();
                         Artifact art = node.getArtifact();
-                        // don't resolve jars for reactor projects
-                        if ( hasToResolveJar( art ) )
+                        // transitive resolution already attempted to download the jars; just warn about jars that
+                        // could not be resolved (but never for reactor projects, which don't need a jar)
+                        if ( hasToResolveJar( art ) && !art.isResolved() )
                         {
-                            try
-                            {
-                                artifactResolver.resolve( art, node.getRemoteRepositories(), localRepository );
-                            }
-                            catch ( ArtifactNotFoundException e )
-                            {
-                                getLog().debug( e.getMessage(), e );
-                                getLog().warn( Messages.getString( "AbstractIdeSupportMojo.artifactdownload",
-                                                                   new Object[] { e.getGroupId(), e.getArtifactId(),
-                                                                       e.getVersion(), e.getMessage() } ) );
-                            }
-                            catch ( ArtifactResolutionException e )
-                            {
-                                getLog().debug( e.getMessage(), e );
-                                getLog().warn( Messages.getString( "AbstractIdeSupportMojo.artifactresolution",
-                                                                   new Object[] { e.getGroupId(), e.getArtifactId(),
-                                                                       e.getVersion(), e.getMessage() } ) );
-                            }
+                            getLog().warn( Messages.getString( "AbstractIdeSupportMojo.artifactdownload",
+                                                               new Object[] { art.getGroupId(), art.getArtifactId(),
+                                                                   art.getVersion(), "" } ) );
                         }
 
                         boolean includeArtifact = true;
@@ -917,7 +890,7 @@ public abstract class AbstractIdeSupportMojo
                                                               dependency.getVersion(), dependency.getType(),
                                                               dependency.getClassifier() );
             baseArtifact =
-                IdeUtils.resolveArtifact( artifactResolver, baseArtifact, remoteRepos, localRepository, getLog() );
+                IdeUtils.resolveArtifact( repositorySystem, baseArtifact, remoteRepos, localRepository, getLog() );
             if ( !baseArtifact.isResolved() )
             {
                 // base artifact does not exist - no point checking for javadoc/sources
@@ -942,7 +915,7 @@ public abstract class AbstractIdeSupportMojo
             if ( !notAvailableMarkerFile.exists() )
             {
                 artifact =
-                    IdeUtils.resolveArtifact( artifactResolver, artifact, remoteRepos, localRepository, getLog() );
+                    IdeUtils.resolveArtifact( repositorySystem, artifact, remoteRepos, localRepository, getLog() );
                 if ( artifact.isResolved() )
                 {
                     if ( "sources".equals( inClassifier ) )
@@ -1059,7 +1032,7 @@ public abstract class AbstractIdeSupportMojo
         try
         {
             VersionRange versionRange = VersionRange.createFromVersionSpec( version );
-            ArtifactVersion mavenVersion = runtimeInformation.getApplicationVersion();
+            DefaultArtifactVersion mavenVersion = new DefaultArtifactVersion( runtimeInformation.getMavenVersion() );
             return versionRange.containsVersion( mavenVersion );
         }
         catch ( InvalidVersionSpecificationException e )

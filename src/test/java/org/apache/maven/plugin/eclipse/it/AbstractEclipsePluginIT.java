@@ -40,14 +40,12 @@ import java.util.Properties;
 import junit.framework.AssertionFailedError;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.factory.DefaultArtifactFactory;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.handler.manager.DefaultArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.DefaultArtifactRepository;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
@@ -1088,7 +1086,7 @@ public abstract class AbstractEclipsePluginIT
      * @param inClassifier the sources/javadocs to be attached
      * @return the not available marker file
      * @throws Exception failures.
-     * @see IdeUtils#createArtifactWithClassifier(String, String, String, String, String, ArtifactFactory)
+     * @see IdeUtils#createArtifactWithClassifier(String, String, String, String, String, org.apache.maven.artifact.factory.ArtifactFactory)
      */
     protected File getNotAvailableMarkerFile( String groupId, String artifactId, String version, String classifier,
                                               String inClassifier )
@@ -1100,26 +1098,39 @@ public abstract class AbstractEclipsePluginIT
         ArtifactRepository localRepository =
             new DefaultArtifactRepository( "local", url, new DefaultRepositoryLayout() );
 
-        ArtifactFactory artifactFactory = new DefaultArtifactFactory();
+        // mirror the type/classifier mapping of IdeUtils.createArtifactWithClassifier
+        String type;
+        if ( "sources".equals( inClassifier ) )
+        {
+            type = "java-source";
+        }
+        else
+        {
+            type = inClassifier;
+        }
 
-        DefaultArtifactHandler javaSourceArtifactHandler = new DefaultArtifactHandler( "java-source" );
-        setVariableValueToObject( javaSourceArtifactHandler, "extension", "jar" );
+        String finalClassifier;
+        if ( classifier == null )
+        {
+            finalClassifier = inClassifier;
+        }
+        else if ( "sources".equals( inClassifier ) && "tests".equals( classifier ) )
+        {
+            finalClassifier = "test-sources";
+        }
+        else
+        {
+            finalClassifier = classifier + "-" + inClassifier;
+        }
 
-        DefaultArtifactHandler javadocArtifactHandler = new DefaultArtifactHandler( "javadoc" );
-        setVariableValueToObject( javadocArtifactHandler, "extension", "jar" );
-
-        Map artifactHandlers = new HashMap();
-        artifactHandlers.put( "java-source", javaSourceArtifactHandler );
-        artifactHandlers.put( "javadoc", javadocArtifactHandler );
-
-        ArtifactHandlerManager artifactHandlerManager = new DefaultArtifactHandlerManager();
-        setVariableValueToObject( artifactHandlerManager, "artifactHandlers", artifactHandlers );
-        setVariableValueToObject( artifactFactory, "artifactHandlerManager", artifactHandlerManager );
+        // "java-source" and "javadoc" artifacts both map to the "jar" extension
+        DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler( type );
+        artifactHandler.setExtension( "jar" );
         // HACK: END
 
         Artifact artifact =
-            IdeUtils.createArtifactWithClassifier( groupId, artifactId, version, classifier, inClassifier,
-                                                   artifactFactory );
+            new DefaultArtifact( groupId, artifactId, VersionRange.createFromVersion( version ), null, type,
+                                 finalClassifier, artifactHandler );
         return IdeUtils.getNotAvailableMarkerFile( localRepository, artifact );
     }
 
