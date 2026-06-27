@@ -25,7 +25,7 @@ under the License.
   <parent>
     <groupId>io.wcm.maven</groupId>
     <artifactId>io.wcm.maven.global-parent</artifactId>
-    <version>80</version>
+    <version>81</version>
     <relativePath />
   </parent>
 
