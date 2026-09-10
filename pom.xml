@@ -85,7 +85,7 @@ under the License.
     <mavenVersion>3.8.1</mavenVersion>
     <maven.test.jvmargs>-Xmx1024m</maven.test.jvmargs>
     <surefire.version>3.6.0</surefire.version>
-    <mavenPluginToolsVersion>3.15.2</mavenPluginToolsVersion>
+    <mavenPluginToolsVersion>3.16.0</mavenPluginToolsVersion>
 
     <!-- site settings -->
     <site.url.module.prefix>maven/plugins/eclipse-maven-plugin</site.url.module.prefix>
